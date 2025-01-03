@@ -137,7 +137,7 @@ class ProgramNode extends ASTnode {
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
         SymbolTable symTab = new SymbolTable();
         symTabList.addFirst(symTab);
-        myId.nameAnalysis(symTabList, scope, Types.ClassType);
+        myId.nameAnalysis(symTabList, scope, Types.ClassType, false); //class name is global
         myClassBody.nameAnalysis(symTabList, scope);
     }
 
@@ -478,9 +478,8 @@ class FieldDeclNode extends DeclNode {
 	myId = id;
     } 
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
-        myId.nameAnalysis(symTabList, scope, myType.returnType());
+        myId.nameAnalysis(symTabList, scope, myType.returnType(), false); // all static vars are global
     }
-    
     public void decompile(PrintWriter p, int indent) {
 	doIndent(p, indent);
 	p.print("static ");
@@ -503,7 +502,7 @@ class VarDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
-        myId.nameAnalysis(symTabList, scope, myType.returnType());
+        myId.nameAnalysis(symTabList, scope, myType.returnType(),true); // all other vars are local
     }
 
     public void decompile(PrintWriter p, int indent) {
@@ -612,9 +611,9 @@ class FormalDeclNode extends DeclNode {
 	myType = type;
 	myId = id;
     }
-
+    //these are all parameter, so they are local
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
-        myId.nameAnalysis(symTabList, scope, myType.returnType());
+        myId.nameAnalysis(symTabList, scope, myType.returnType(), true);
     }
 
     public void decompile(PrintWriter p, int indent) {
@@ -1015,7 +1014,7 @@ class ReturnWithValueNode extends StmtNode {
     }
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
         myExp.lookup(symTabList, scope);
-        symTabList.getFirst().insert("return", Types.ReturnIntType);
+        symTabList.getFirst().insert("return", Types.ReturnIntType); // no need to insert isLocal for methode
     }
 
     public void decompile(PrintWriter p, int indent) {
@@ -1199,15 +1198,18 @@ class FalseNode extends ExpNode {
 }
 
 class IdNode extends ExpNode
-{
+{   
+    //TODO: remove when done
+    boolean isLocal;
     public IdNode(int lineNum, int charNum, String strVal) {
 	myLineNum = lineNum;
 	myCharNum = charNum;
 	myStrVal = strVal;
     }
     // check if idNode already exists in the symbol table and insert it if it doesn't
-    public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope, int type) {
+    public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope, int type, boolean isLocal) {
         boolean exists = false;
+        this.isLocal = isLocal;
         //once used to check all scopes encapuslating the current scope, commented out since shadowing is allowed
         //commented instead of removed to keep the code for future reference
         //for (SymbolTable symTab: symTabList) {
@@ -1221,7 +1223,7 @@ class IdNode extends ExpNode
             exists = true;
         }
         if (!exists) {
-            symTabList.getFirst().insert(myStrVal, type);
+            symTabList.getFirst().insert(myStrVal, type, isLocal);
             myType = type;
         } else {
             myType = Types.ErrorType;
@@ -1274,7 +1276,8 @@ class IdNode extends ExpNode
     }
 
     public void decompile(PrintWriter p, int indent) {
-	p.print(myStrVal + " (" + Types.ToString(myType) +")");
+	p.print(myStrVal + " (" + Types.ToString(myType) +") am I local? "+ isLocal);
+    //TODO: remove print of isLocal here
     }
 
     private int myLineNum;

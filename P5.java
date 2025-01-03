@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.LinkedList;
+
 import java_cup.runtime.*;
 
 // **********************************************************************
@@ -68,6 +70,11 @@ public class P5 {
 	//}
 
 	// Now call your code generator...
+	LinkedList<SymbolTable> symTabList = new LinkedList<SymbolTable>();
+
+	((ASTnode)root.value).nameAnalysis(symTabList, 0);
+	((ASTnode)root.value).decompile(outFile, 0);
+	outFile.close();
 	
 	return;
     }

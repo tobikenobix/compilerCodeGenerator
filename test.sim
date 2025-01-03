@@ -1,3 +1,15 @@
 // Here you write your extensive test program that must
 // excercise all grammatical concepts defined in simple.grammar
+public class test {
+    static int a;
 
+    public static int testi(int hallo, String world){
+        boolean tester;
+        return 5;
+    }
+
+    public static void main(){
+        String b;
+    }
+    
+}

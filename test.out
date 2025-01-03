@@ -1,0 +1,10 @@
+public class test (class) am I local? false {
+  static int a (int) am I local? false;
+  public static int testi (method int) am I local? false (int hallo (int) am I local? true, String world (String) am I local? true) {
+    boolean tester (boolean) am I local? true;
+    return 5;
+  }
+  public static void main (method void) am I local? false () {
+    String b (String) am I local? true;
+  }
+}
