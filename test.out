@@ -1,10 +1,25 @@
-public class test (class) am I local? false {
-  static int a (int) am I local? false;
-  public static int testi (method int) am I local? false (int hallo (int) am I local? true, String world (String) am I local? true) {
-    boolean tester (boolean) am I local? true;
+public class test (class offset: 0) {
+  static int a (int offset: 0);
+  static String yeaha (String offset: 4);
+  public static int testi (method int offset: 0) (int hallo (int offset: 0), String world (String offset: 4)) {
+    boolean tester (boolean offset: 8);
+    int number (int offset: 12);
+    String lala (String offset: 16);
     return 5;
   }
-  public static void main (method void) am I local? false () {
-    String b (String) am I local? true;
+I have 3local vars
+I have 2arguments
+  public static int ohu (method int offset: 0) (boolean he (boolean offset: 0)) {
+    String abc (String offset: 4);
+    return 3;
   }
+I have 1local vars
+I have 1arguments
+  public static void main (method void offset: 0) () {
+    String b (String offset: 0);
+    boolean truth (boolean offset: 4);
+    int another (int offset: 8);
+  }
+I have 3local vars
+I have 0arguments
 }

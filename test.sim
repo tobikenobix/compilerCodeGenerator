@@ -2,14 +2,24 @@
 // excercise all grammatical concepts defined in simple.grammar
 public class test {
     static int a;
+    static String yeaha;
 
     public static int testi(int hallo, String world){
         boolean tester;
+        int number;
+        String lala;
         return 5;
+    }
+
+    public static int ohu(boolean he){
+        String abc;
+        return 3;
     }
 
     public static void main(){
         String b;
+        boolean truth;
+        int another;
     }
     
 }

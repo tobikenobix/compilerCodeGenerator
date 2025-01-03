@@ -10,29 +10,38 @@ public class SymbolTable {
 			myType = t; 
 		}
 
-		//constructor for functions
-		public Sym(String id, int t, FormalsListNode list) {
+		//constructor for methodes
+		public Sym(String id, int t, FormalsListNode list, int num_local_vars, int num_params) {
 			myName = id;
 			myType = t;
 			myList = list;
+			this.num_local_vars = num_local_vars;
+			this.num_params = num_params;
 			
 		}
 
 		//construcotr for id
-		public Sym(String id, int t, boolean isLocal){
+		public Sym(String id, int t, boolean isLocal, int offset){
 			myName = id;
 			myType = t;
+			this.offset = offset;
 			this.isLocal = isLocal;
 		}
 
 		public String name () { return myName; }
 		public int type () { return myType; }
 		public FormalsListNode list() { return myList; }
-		// new getter and setter for offset
+		// new getter for offset
 		public int offset() { return offset; }
-		public void setOffset(int offset) { this.offset = offset; }
 		// new getter for isLocal
 		public boolean isLocal() { return isLocal; }
+		// getter for vars and args
+		public int getNumLocalVars(){
+			return num_local_vars;
+		}
+		public int getNumParams(){
+			return num_params;
+		}
 
 		// private fields
 		private String myName;
@@ -42,9 +51,13 @@ public class SymbolTable {
 		private int offset;
 		// field to set local or global
 		private boolean isLocal;
+		// fields to save number of vars and args of a methode
+		private int num_local_vars;
+		private int num_params;
     };
 
     Hashtable table;
+	int offset = -4; //offsett for each symtable - it is always a new scope so starting at 0 for it 
 
     SymbolTable () { table = new Hashtable(); }
 
@@ -61,11 +74,11 @@ public class SymbolTable {
 		return sym;
     }
 
-	//insert functions
-	public Sym insert (String name, int type, FormalsListNode list) {
+	//insert methods
+	public Sym insert (String name, int type, FormalsListNode list, int num_local_vars, int num_params) {
 		if (table.containsKey(name))
 			return (Sym) table.get(name);
-		Sym sym = new Sym(name, type, list);
+		Sym sym = new Sym(name, type, list, num_local_vars, num_params);
 		table.put(name, sym);
 		return sym;
 	}
@@ -74,7 +87,8 @@ public class SymbolTable {
 	public Sym insert(String name, int type, boolean isLocal){
 		if (table.containsKey(name))
 			return (Sym) table.get(name);
-		Sym sym = new Sym(name, type, isLocal);
+		offset+=4;
+		Sym sym = new Sym(name, type, isLocal, offset);
 		table.put(name, sym);
 		return sym;
 	}

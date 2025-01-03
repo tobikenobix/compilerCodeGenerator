@@ -235,6 +235,9 @@ class DeclListNode extends ASTnode {
             System.exit(-1);
         }
     }
+    public int length(){
+        return myDecls.length();
+    }
 
   // sequence of kids (DeclNodes)
   private Sequence myDecls;
@@ -305,6 +308,10 @@ class MethodBodyNode extends ASTnode {
     public void decompile(PrintWriter p, int indent) {
         myDeclList.decompile(p, indent);
         myStmtList.decompile(p, indent);
+    }
+
+    public int getVarNumber(){
+        return myDeclList.length();
     }
 
     public void typeCheck(){
@@ -526,10 +533,12 @@ class MethodDeclNode extends DeclNode {
 	myFormalsList = formalList;
 	myBody = body;
     }
+    int num_local_vars;
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
-        myId.methodNameAnalyisis(symTabList, scope, Types.MethodTypeVoid,myFormalsList);
+        num_local_vars = myBody.getVarNumber();
+        myId.methodNameAnalyisis(symTabList, scope, Types.MethodTypeVoid,myFormalsList, num_local_vars);
         myFormalsList.nameAnalysis(symTabList, scope);
-        myBody.nameAnalysis(symTabList, scope);
+        myBody.nameAnalysis(symTabList, scope); 
     }
 
     public void decompile(PrintWriter p, int indent) {
@@ -541,6 +550,8 @@ class MethodDeclNode extends DeclNode {
         myBody.decompile(p, indent+2);
         doIndent(p, indent);
         p.println("}");
+        p.println("I have "+ myId.getTempvars() + "local vars"); //debugging helper
+        p.println("I have "+  myId.getTempargs() + "arguments");
     }
 
     public void typeCheck(){
@@ -566,9 +577,10 @@ class MethodDeclNodeInt extends MethodDeclNode {
 	myBody = body;
     
     }
-
+    int num_local_vars;
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
-        myId.methodNameAnalyisis(symTabList, scope, Types.MethodTypeInt, myFormalsList);
+         num_local_vars = myBody.getVarNumber();
+        myId.methodNameAnalyisis(symTabList, scope, Types.MethodTypeInt, myFormalsList, num_local_vars);
         myFormalsList.nameAnalysis(symTabList, scope); 
         myBody.nameAnalysis(symTabList, scope);
         
@@ -590,6 +602,8 @@ class MethodDeclNodeInt extends MethodDeclNode {
         myBody.decompile(p, indent+2);
         doIndent(p, indent);
         p.println("}");
+        p.println("I have "+ myId.getTempvars() + "local vars"); // debugging helper
+        p.println("I have "+  myId.getTempargs() + "arguments");
     }
 
     public void typeCheck(){
@@ -1201,6 +1215,7 @@ class IdNode extends ExpNode
 {   
     //TODO: remove when done
     boolean isLocal;
+    int offset;
     public IdNode(int lineNum, int charNum, String strVal) {
 	myLineNum = lineNum;
 	myCharNum = charNum;
@@ -1225,6 +1240,7 @@ class IdNode extends ExpNode
         if (!exists) {
             symTabList.getFirst().insert(myStrVal, type, isLocal);
             myType = type;
+            offset = symTabList.getFirst().lookup(myStrVal).offset();
         } else {
             myType = Types.ErrorType;
             Errors.fatal(myLineNum, myCharNum, "Multiply declared identifier");
@@ -1232,8 +1248,9 @@ class IdNode extends ExpNode
         }
         
     }
-
-    public void methodNameAnalyisis(LinkedList<SymbolTable> symTabList, int scope, int type, FormalsListNode symArgTabList) {
+    int tempargs; //TODO delete this, this was used for debugging. As soon as project is finished this is not needed anymore
+    int tempvars;
+    public void methodNameAnalyisis(LinkedList<SymbolTable> symTabList, int scope, int type, FormalsListNode symArgTabList, int num_local_vars) {
         boolean exists = false;
         SymbolTable symTab = symTabList.getFirst();
         if (symTab.lookup(myStrVal) != null) {
@@ -1242,13 +1259,22 @@ class IdNode extends ExpNode
         }
         
         if (!exists) {
-            symTabList.getFirst().insert(myStrVal, type, symArgTabList);
+            symTabList.getFirst().insert(myStrVal, type, symArgTabList, num_local_vars, symArgTabList.length());
             myType = type;
+            tempargs = symTabList.getFirst().lookup(myStrVal).getNumParams();
+            tempvars = symTabList.getFirst().lookup(myStrVal).getNumLocalVars();
         } else {
             myType = Types.ErrorType;
             Errors.fatal(myLineNum, myCharNum, "Multiply declared identifier");
             ProgramNode.errorNameAnalysis = true;
         }
+    }
+    // TODO: delte this, this was used for debugging. As soon as project is finished this is not needed anymore
+    int getTempargs(){
+        return tempargs;
+    }
+    int getTempvars(){
+        return tempvars;
     }
     public SymbolTable.Sym getArgs(){
         for (SymbolTable symTab: symArgTabList) {
@@ -1276,8 +1302,7 @@ class IdNode extends ExpNode
     }
 
     public void decompile(PrintWriter p, int indent) {
-	p.print(myStrVal + " (" + Types.ToString(myType) +") am I local? "+ isLocal);
-    //TODO: remove print of isLocal here
+	p.print(myStrVal + " (" + Types.ToString(myType) + " offset: "+offset+")" );
     }
 
     private int myLineNum;
