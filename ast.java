@@ -794,10 +794,12 @@ class PrintStmtNode extends StmtNode {
         if (myExp.getType() != Types.StringType){
             Errors.fatal(0, 0, "Attempt to print " + Types.ToString(myExp.getType()) + " as a string");
         }
+        myType = myExp.getType(); // TODO: revalidate this
     }
     //assuming you can print any type so no typecheck done here
     // 1 kid
     private ExpNode myExp;
+    private int myType; //unclear as of now why this needs to be done, printed statments are always Strings.
 }
 
 class AssignStmtNode extends StmtNode {
