@@ -157,6 +157,15 @@ class ProgramNode extends ASTnode {
         myClassBody.typeCheck();
     }
 
+    // this is where the fun begins
+    public void cgen(){
+        // generate header
+        //Codegen.generateHeader();
+        Codegen.generateHeader();
+        myClassBody.cgen();
+
+    }
+
 
     // 2 kids
     private IdNode myId;
@@ -192,6 +201,10 @@ class ClassBodyNode extends ASTnode {
 
     public void typeCheck(){
         myDeclList.typeCheck();
+    }
+
+    public void cgen(){
+        myDeclList.cgen();
     }
 
     // 1 kid
@@ -232,6 +245,17 @@ class DeclListNode extends ASTnode {
             }
         } catch (NoCurrentException ex) {
             System.err.println("unexpected NoCurrentException in DeclListNode.typeCheck");
+            System.exit(-1);
+        }
+    }
+
+    public void cgen(){
+        try {
+            for (myDecls.start(); myDecls.isCurrent(); myDecls.advance()) {
+                ((DeclNode)myDecls.getCurrent()).cgen();
+            }
+        } catch (NoCurrentException ex) {
+            System.err.println("unexpected NoCurrentException in DeclListNode.cgen");
             System.exit(-1);
         }
     }
@@ -477,6 +501,10 @@ abstract class DeclNode extends ASTnode
     public void typeCheck(){
         //do nothing
     }
+    public void cgen(){
+        //do nothing
+        System.err.println("Oh no, seems like you forgot to cover this case: " + this.getClass());
+    }
 }
 
 class FieldDeclNode extends DeclNode {
@@ -494,6 +522,11 @@ class FieldDeclNode extends DeclNode {
 	p.print(" ");
 	myId.decompile(p, indent);
 	p.println(";");
+    }
+
+    public void cgen(){ 
+        // define static vars as global vars
+        Codegen.generateDirectiveWithComment(".globl", "global var", myId.getStrVal());
     }
 
 
@@ -557,6 +590,24 @@ class MethodDeclNode extends DeclNode {
     public void typeCheck(){
         myBody.typeCheck();
     }
+    public void cgen(){
+        //TODO: function entry and exit
+        // entry
+        Codegen.generateDirective(".globl", myId.getStrVal());
+        Codegen.genLabel(myId.getStrVal(), "FUNCTION ENTRY");
+        Codegen.genPush("$ra");
+        Codegen.genPush(Codegen.FP);
+        Codegen.generate("addu",Codegen.FP, Codegen.SP, 8);
+        // TODO insert code gen for FormalsListNode
+        // TODO insert code gen for MethodBodyNode
+        // exit
+        Codegen.genLabel("." + myId.getStrVal() +"_Exit", "FUNCTION EXIT");
+        Codegen.generateIndexed("lw", "$ra", Codegen.FP , 0, "restore ra");
+        Codegen.generateWithComment("move", "restore SP", Codegen.SP, Codegen.FP);
+        Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -4, "restore FP");
+        Codegen.generateWithComment("jr", "return to caller", "$ra");
+    }
+
 
     public FormalsListNode getFormalList (){
         return myFormalsList;
@@ -796,7 +847,7 @@ class PrintStmtNode extends StmtNode {
         }
         myType = myExp.getType(); // TODO: revalidate this
     }
-    //assuming you can print any type so no typecheck done here
+    //assuming you can print only type String 
     // 1 kid
     private ExpNode myExp;
     private int myType; //unclear as of now why this needs to be done, printed statments are always Strings.

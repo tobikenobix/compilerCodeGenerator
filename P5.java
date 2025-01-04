@@ -21,7 +21,7 @@ public class P5 {
 	throws IOException // may be thrown by the scanner
     {
 	// check for command-line arg
-	if (args.length != 2) {
+	if (args.length != 3) {
 	    System.err.println("please supply name of file to be parsed " +
 			       "and name of file for unparsing");
 	    System.exit(-1);
@@ -42,6 +42,14 @@ public class P5 {
 	    outFile = IO.openOutputFile(args[1]);
 	} catch (IOException ex) {
 	    System.err.println("File " + args[1] + " could not be opened.");
+	    System.exit(-1);
+	}
+	// added to generate spim code and still have decompiled code for debugging
+	PrintWriter spimFilWriter = null;
+	try {
+	    spimFilWriter = IO.openOutputFile(args[2]);
+	} catch (IOException ex) {
+	    System.err.println("File " + args[2] + " could not be opened.");
 	    System.exit(-1);
 	}
 
@@ -74,6 +82,10 @@ public class P5 {
 
 	((ASTnode)root.value).nameAnalysis(symTabList, 0);
 	((ASTnode)root.value).decompile(outFile, 0);
+	((ProgramNode)root.value).typeCheck();
+	Codegen.p = spimFilWriter;
+	((ProgramNode)root.value).cgen();
+	spimFilWriter.close();
 	outFile.close();
 	
 	return;

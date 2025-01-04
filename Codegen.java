@@ -20,12 +20,45 @@ public class Codegen {
     // for generating labels
     private static int currLabel = 0;
 
+ 
 
     // ********************************************************************** 
     // **********************************************************************
     // GENERATE OPERATIONS
     // **********************************************************************
     // **********************************************************************
+
+    // **********************************************************************
+    // all necessary code to start the generated code
+    // **********************************************************************
+       //generate header
+       public static void generateHeader(){
+        p.println("\t .data");
+        p.println("_true: .asciiz \"true\"");
+        p.println("_false: .asciiz \"false\"");
+        p.println("_.newline: .asciiz \"\\n\"");
+        p.println(".text");
+    }
+
+    // **********************************************************************
+    // genDirective (String args -- perhaps empty)
+    //    given:  directive
+    //    do:     write nicely formatted code (ending with new line)
+    // **********************************************************************
+    public static void generateDirective(String directive) {
+        p.print( directive);
+        p.println();
+    }
+
+    public static void generateDirective(String directive, String arg) {
+        p.print( directive + " " + arg);
+        p.println();
+    }
+
+    public static void generateDirectiveWithComment(String directive, String comment, String arg) {
+        p.print( directive + " " + arg + "\t\t#" + comment);
+        p.println();
+    }
 
     // **********************************************************************
     // generateWithComment (string args -- perhaps empty)
@@ -53,15 +86,35 @@ public class Codegen {
 
     public static void generateWithComment(String opcode, String comment,
                                            String arg1, String arg2) {
+        int space = MAXLEN - opcode.length() + 2;
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+            if (arg2 != "") p.print(", " + arg2);
+        }
+        if (comment != "") p.print("\t\t#" + comment);
+        p.println();
 
     }
 
     public static void generateWithComment(String opcode, String comment,
                                            String arg1) {
+        int space = MAXLEN - opcode.length() + 2;
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+        }
+        if (comment != "") p.print("\t\t#" + comment);
+        p.println();
 
     }
 
     public static void generateWithComment(String opcode, String comment) {
+        p.print("\t" + opcode);
+        if (comment != "") p.print("\t\t#" + comment);
+        p.println();
 
     }
 
@@ -91,10 +144,19 @@ public class Codegen {
     }
 
     public static void generate(String opcode, String arg1) {
+        int space = MAXLEN - opcode.length() + 2;
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+        }
+        p.println();
 
     }
 
     public static void generate(String opcode) {
+        p.print("\t" + opcode);
+        p.println();
 
     }
 
@@ -105,6 +167,17 @@ public class Codegen {
     // **********************************************************************
     public static void generate(String opcode, String arg1, String arg2,
                                 int arg3) {
+        int space = MAXLEN - opcode.length() + 2;
+
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+            if (arg2 != "") {
+                p.print(", " + arg2 + ", " + arg3);
+            }
+        }
+        p.println();
 
     }
 
@@ -129,6 +202,18 @@ public class Codegen {
     public static void generateIndexed(String opcode, String arg1,
                                       String arg2, int arg3, String comment)
     {
+        int space = MAXLEN - opcode.length() + 2;
+
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+            if (arg2 != "") {
+                p.print(", " + arg3 + "(" + arg2 + ")");
+            }
+        }
+        if (comment != "") p.print("\t\t#" + comment);
+        p.println();
 
     }
 
@@ -149,6 +234,7 @@ public class Codegen {
 
     public static void generateLabeled(String label, String opcode,
                                        String comment) {
+        p.print(label + " " + opcode + "\t\t#" + comment);
 
     }
 
@@ -167,6 +253,8 @@ public class Codegen {
     //    generate code to pop into the given register
     // **********************************************************************
     public static void genPop(String s) {
+        generateIndexed("lw", s, SP, 4, "POP");
+        generate("addu", SP, SP, 4);                       
 
     }
 
@@ -189,7 +277,8 @@ public class Codegen {
     //   generate: L:    # comment
     // **********************************************************************
     public static void genLabel(String label, String comment) {
-
+        p.print(label + ":" + "\t\t# " + comment);
+        p.println();
     }
 
     public static void genLabel(String label) {
@@ -201,6 +290,6 @@ public class Codegen {
     //        ._L0 ._L1 ._L2, etc.
     // **********************************************************************
     public static String nextLabel() {
-
+        return "Blödsinn"; //TODO: change this
     }                               
 }
