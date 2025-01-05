@@ -10,6 +10,10 @@ yeaha:  .word 0		#global static variable
 abc:  .word 0		#global static variable
 .text
 .globl abc		#global var
+.data
+bestIntInTheWorld:  .word 0		#global static variable
+.text
+.globl bestIntInTheWorld		#global var
 .globl main
 		# FUNCTION ENTRY main
 main:
@@ -40,6 +44,49 @@ main:
 	sw    $a0, abc		#store value of abc
 	lw    $a0, yeaha		#load variable yeaha
 	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+.data
+._L3:  .word 3		#Integer Literal
+.text
+	lw    $a0, ._L3
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+.data
+._L4:  .word 3		#Integer Literal
+.text
+	lw    $a0, ._L4
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, bestIntInTheWorld		#store value of bestIntInTheWorld
+.data
+._L5:  .word 6		#Integer Literal
+.text
+	lw    $a0, ._L5
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+.data
+._L6:  .word 3		#Integer Literal
+.text
+	lw    $a0, ._L6
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+.data
+._L7:  .word 3		#Integer Literal
+.text
+	lw    $a0, ._L7
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	lw    $t1, 4($sp)
+	sub   $a0, $t1, $a0		#subtract
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, bestIntInTheWorld		#store value of bestIntInTheWorld
+	lw    $a0, bestIntInTheWorld		#load variable bestIntInTheWorld
+	li    $v0, 1
 	syscall
 	la    $a0, _.newline
 	li    $v0, 4

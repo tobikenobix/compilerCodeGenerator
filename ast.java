@@ -868,16 +868,21 @@ class PrintStmtNode extends StmtNode {
         p.println(");");
     }
     public void typeCheck(){
-        if (myExp.getType() != Types.StringType){
+        if (myExp.getType() != Types.StringType && myExp.getType() != Types.IntType){
             Errors.fatal(0, 0, "Attempt to print " + Types.ToString(myExp.getType()) + " as a string");
         }
-        myType = myExp.getType(); // TODO: revalidate this
+        myType = myExp.getType();
+        if( myType == Types.StringType){
+            sysCallType = 4;
+        } else if (myType == Types.IntType){
+            sysCallType = 1;
+        }
     }
 
     public void cgen(){
         myExp.cgen();
         //print the string
-        Codegen.generate("li", "$v0", 4);
+        Codegen.generate("li", "$v0", sysCallType);
         Codegen.generate("syscall");
         //print new line
         Codegen.generate("la", "$a0", "_.newline");
@@ -888,6 +893,7 @@ class PrintStmtNode extends StmtNode {
     // 1 kid
     private ExpNode myExp;
     private int myType; //unclear as of now why this needs to be done, printed statments are always Strings.
+    private int sysCallType;
 }
 
 class AssignStmtNode extends StmtNode {
@@ -923,6 +929,7 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void cgen(){
+            //TODO: next goal make it work for local vars, and all other datatypes
             myExp.cgen();
             //TODO currently only working for global vars
             Codegen.generateWithComment("sw", "store value of " + myId.getStrVal(), "$a0", myId.getStrVal());
@@ -1248,6 +1255,18 @@ class IntLitNode extends ExpNode {
 
     public int getType() {
         return Types.IntType;
+    }
+
+    public void cgen(){
+        String myLabel="";
+        if (myLabel.isEmpty()){ //check if label is set
+            Codegen.generateDirective(".data");
+            myLabel = Codegen.nextLabel();
+            Codegen.generateLabeled(myLabel, ".word", "Integer Literal", myIntVal+"");
+            Codegen.generateDirective(".text");
+        }
+        // copy int val to accumulator
+        Codegen.generate("lw", "$a0", myLabel);
     }
 
     private int myLineNum;
@@ -1590,6 +1609,7 @@ class PlusNode extends BinaryExpNode
         p.print(")");
 
     }
+
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
         int type2 = myExp2.getType();
@@ -1610,6 +1630,18 @@ class PlusNode extends BinaryExpNode
         return returnType;
 
     }
+
+    public void cgen(){
+        // TODO: as of now, only global vars
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generate("add", "$a0", "$t1", "$a0");
+        Codegen.generateWithComment("addiu", "POP", Codegen.SP, Codegen.SP, "4");
+
+    }
+
 }
 
 class MinusNode extends BinaryExpNode
@@ -1652,6 +1684,17 @@ class MinusNode extends BinaryExpNode
         return returnType;
 
     }
+
+    public void cgen(){
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("sub", "subtract", "$a0", "$t1", "$a0");
+        Codegen.generateWithComment("addiu", "POP", Codegen.SP, Codegen.SP, "4");        
+
+    }
+
 }
 
 class TimesNode extends BinaryExpNode

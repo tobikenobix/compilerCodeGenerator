@@ -1,13 +1,15 @@
-// Here you write your extensive test program that must
-// excercise all grammatical concepts defined in simple.grammar
 public class test {
     static String yeaha;
     static String abc;
+    static int bestIntInTheWorld;
     public static void main(){
         System.out.println("Hello world");
         yeaha = "hello again";
         abc = "abc";
         System.out.println(yeaha);
+        bestIntInTheWorld = 3 + 3;
+        bestIntInTheWorld = 6 - (3+3);
+        System.out.println(bestIntInTheWorld);
 
     }
 }
