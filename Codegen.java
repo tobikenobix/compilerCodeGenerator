@@ -44,7 +44,6 @@ public class Codegen {
         p.println("_true: .asciiz \"true\"");
         p.println("_false: .asciiz \"false\"");
         p.println("_.newline: .asciiz \"\\n\"");
-        p.println(".text");
     }
 
     // **********************************************************************

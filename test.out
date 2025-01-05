@@ -1,9 +1,11 @@
 public class test (class offset: 0) {
-  static int a (int offset: 0);
-  static String yeaha (String offset: 4);
+  static String yeaha (String offset: 0);
+  static String abc (String offset: 4);
   public static void main (method void offset: 0) () {
     System.out.println("Hello world");
-    System.out.println("Another hello");
+    yeaha (String offset: 0) = "hello again";
+    abc (String offset: 0) = "abc";
+    System.out.println(yeaha (String offset: 0));
   }
 I have 0local vars
 I have 0arguments

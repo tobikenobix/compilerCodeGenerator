@@ -545,6 +545,9 @@ class FieldDeclNode extends DeclNode {
 
     public void cgen(){ 
         // define static vars as global vars
+        Codegen.generateDirective(".data");
+        Codegen.generateLabeled(myId.getStrVal(), ".word", "global static variable", "0");
+        Codegen.generateDirective(".text");
         Codegen.generateDirectiveWithComment(".globl", "global var", myId.getStrVal());
     }
 
@@ -872,7 +875,6 @@ class PrintStmtNode extends StmtNode {
     }
 
     public void cgen(){
-        //TODO finish this
         myExp.cgen();
         //print the string
         Codegen.generate("li", "$v0", 4);
@@ -918,6 +920,12 @@ class AssignStmtNode extends StmtNode {
         if(myId.getType() != expType){ 
             Errors.fatal(lineNum, charNum, "Type mismatch when assigning to " + myId.getStrVal());
         }
+    }
+
+    public void cgen(){
+            myExp.cgen();
+            //TODO currently only working for global vars
+            Codegen.generateWithComment("sw", "store value of " + myId.getStrVal(), "$a0", myId.getStrVal());
     }
 
     // 2 kids
@@ -1410,6 +1418,12 @@ class IdNode extends ExpNode
 
     public void decompile(PrintWriter p, int indent) {
 	p.print(myStrVal + " (" + Types.ToString(myType) + " offset: "+offset+")" );
+    }
+
+    public void cgen(){
+        // TODO: this is implmented for global vars and printing, you might need to recheck if this works with everything
+        // load the value of the variable into the accumulator
+        Codegen.generateWithComment("lw","load variable " + myStrVal, "$a0", myStrVal);
     }
 
     private int myLineNum;

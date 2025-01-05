@@ -2,9 +2,14 @@
 _true: .asciiz "true"
 _false: .asciiz "false"
 _.newline: .asciiz "\n"
+.data
+yeaha:  .word 0		#global static variable
 .text
-.globl a		#global var
 .globl yeaha		#global var
+.data
+abc:  .word 0		#global static variable
+.text
+.globl abc		#global var
 .globl main
 		# FUNCTION ENTRY main
 main:
@@ -24,9 +29,16 @@ main:
 	li    $v0, 4
 	syscall
 .data
-._L1:  .asciiz "Another hello"		#String Literal
+._L1:  .asciiz "hello again"		#String Literal
 .text
 	la    $a0, ._L1
+	sw    $a0, yeaha		#store value of yeaha
+.data
+._L2:  .asciiz "abc"		#String Literal
+.text
+	la    $a0, ._L2
+	sw    $a0, abc		#store value of abc
+	lw    $a0, yeaha		#load variable yeaha
 	li    $v0, 4
 	syscall
 	la    $a0, _.newline
