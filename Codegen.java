@@ -29,6 +29,13 @@ public class Codegen {
     // **********************************************************************
 
     // **********************************************************************
+    // generates a header comment
+    // **********************************************************************
+    public static void generateHeaderComment(String comment){
+        p.print("\t\t# " + comment);
+        p.println();
+    }
+    // **********************************************************************
     // all necessary code to start the generated code
     // **********************************************************************
        //generate header
@@ -140,6 +147,15 @@ public class Codegen {
     }
 
     public static void generate(String opcode, String arg1, String arg2) {
+        int space = MAXLEN - opcode.length() + 2;
+
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+            if (arg2 != "") p.print(", " + arg2);
+        }
+        p.println();
 
     }
 
@@ -188,6 +204,17 @@ public class Codegen {
     //    do:     write nicely formatted code (ending with new line)
     // **********************************************************************  
     public static void generate(String opcode, String arg1, int arg2) {
+        int space = MAXLEN - opcode.length() + 2;
+
+        p.print("\t" + opcode);
+        if (arg1 != "") {
+            for (int k = 1; k <= space; k++) p.print(" ");
+            p.print(arg1);
+            if (arg2 != 0) {
+                p.print(", " + arg2);
+            }
+        }
+        p.println();
 
     }
 
@@ -229,12 +256,15 @@ public class Codegen {
     // **********************************************************************
     public static void generateLabeled(String label, String opcode,
                                        String comment, String arg1) {
+        p.print(label + ":  " + opcode + " " + arg1 + "\t\t#" + comment);
+        p.println();
 
     }
 
     public static void generateLabeled(String label, String opcode,
                                        String comment) {
         p.print(label + " " + opcode + "\t\t#" + comment);
+        p.println();
 
     }
 
@@ -282,6 +312,8 @@ public class Codegen {
     }
 
     public static void genLabel(String label) {
+        p.print(label + ":");
+        p.println();
 
     }
 
@@ -290,6 +322,8 @@ public class Codegen {
     //        ._L0 ._L1 ._L2, etc.
     // **********************************************************************
     public static String nextLabel() {
-        return "Blödsinn"; //TODO: change this
+        String result = "._L" + currLabel;
+        currLabel++;
+        return result;
     }                               
 }

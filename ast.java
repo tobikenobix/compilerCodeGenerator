@@ -342,6 +342,11 @@ class MethodBodyNode extends ASTnode {
         myStmtList.typeCheck();
     }
 
+    public void cgen(){
+        //TODO: validate if a decl list cgen is needed
+        myStmtList.cgen();
+    }
+
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -382,6 +387,20 @@ class StmtListNode extends ASTnode {
             }
         } catch (NoCurrentException ex) {
             System.err.println("unexpected NoCurrentException in StmtListNode.typeCheck");
+            System.exit(-1);
+        }
+    }
+    public void cgen(){
+        if(myStmts.length() > 0) {
+            Codegen.generateHeaderComment(" STATEMENTS");
+        }
+        // TODO: YOU ARE HERE
+        try {
+            for (myStmts.start(); myStmts.isCurrent(); myStmts.advance()) {
+                ((StmtNode)myStmts.getCurrent()).cgen();
+            }
+        } catch (NoCurrentException ex) {
+            System.err.println("unexpected NoCurrentException in StmtListNode.cgen");
             System.exit(-1);
         }
     }
@@ -591,15 +610,15 @@ class MethodDeclNode extends DeclNode {
         myBody.typeCheck();
     }
     public void cgen(){
-        //TODO: function entry and exit
         // entry
         Codegen.generateDirective(".globl", myId.getStrVal());
-        Codegen.genLabel(myId.getStrVal(), "FUNCTION ENTRY");
+        Codegen.generateHeaderComment("FUNCTION ENTRY " + myId.getStrVal());
+        Codegen.genLabel(myId.getStrVal());
         Codegen.genPush("$ra");
         Codegen.genPush(Codegen.FP);
         Codegen.generate("addu",Codegen.FP, Codegen.SP, 8);
         // TODO insert code gen for FormalsListNode
-        // TODO insert code gen for MethodBodyNode
+        myBody.cgen();
         // exit
         Codegen.genLabel("." + myId.getStrVal() +"_Exit", "FUNCTION EXIT");
         Codegen.generateIndexed("lw", "$ra", Codegen.FP , 0, "restore ra");
@@ -825,6 +844,10 @@ class SwitchGroupNode extends ASTnode {
 abstract class StmtNode extends ASTnode {
     public abstract void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope);
     public abstract void typeCheck();
+    public void cgen(){
+        //do nothing
+        System.err.println("Oh no, seems like you forgot to cover this case: " + this.getClass());
+    }
 }
 
 class PrintStmtNode extends StmtNode {
@@ -846,6 +869,18 @@ class PrintStmtNode extends StmtNode {
             Errors.fatal(0, 0, "Attempt to print " + Types.ToString(myExp.getType()) + " as a string");
         }
         myType = myExp.getType(); // TODO: revalidate this
+    }
+
+    public void cgen(){
+        //TODO finish this
+        myExp.cgen();
+        //print the string
+        Codegen.generate("li", "$v0", 4);
+        Codegen.generate("syscall");
+        //print new line
+        Codegen.generate("la", "$a0", "_.newline");
+        Codegen.generate("li", "$v0", 4);
+        Codegen.generate("syscall");
     }
     //assuming you can print only type String 
     // 1 kid
@@ -1186,6 +1221,10 @@ abstract class ExpNode extends ASTnode {
     public  int getType(){
         return Types.ErrorType;
     } 
+    public void cgen(){
+        //do nothing
+        System.err.println("Oh no, seems like you forgot to cover this case: " + this.getClass());
+    }
 }
 
 class IntLitNode extends ExpNode {
@@ -1217,6 +1256,21 @@ class StringLitNode extends ExpNode {
 
     public void decompile(PrintWriter p, int indent) {
         p.print(myStrVal);
+    }
+
+    public void cgen(){
+        String myLabel="";
+        if (myLabel.isEmpty()){ //check if label is set
+            Codegen.generateDirective(".data");
+            myLabel = Codegen.nextLabel();
+            Codegen.generateLabeled(myLabel, ".asciiz", "String Literal", myStrVal);
+            Codegen.generateDirective(".text");
+        }
+        // to prevent having to return the label with the cgen method, the label is stored in the accumulator
+        // TODOD: validate that this works, it just copies the string into the accumulator
+        Codegen.generate("la", "$a0", myLabel);
+       // Codegen.genPush("$t0");
+       // Codegen.genPop("$a0");
     }
 
     public int getType() {

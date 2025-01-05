@@ -6,26 +6,33 @@ _.newline: .asciiz "\n"
 .globl a		#global var
 .globl yeaha		#global var
 .globl main
-main:		# FUNCTION ENTRY
+		# FUNCTION ENTRY main
+main:
 	sw    $ra, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
 	sw    $fp, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
 	addu  $fp, $sp, 8
+		#  STATEMENTS
+.data
+._L0:  .asciiz "Hello world"		#String Literal
+.text
+	la    $a0, ._L0
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+.data
+._L1:  .asciiz "Another hello"		#String Literal
+.text
+	la    $a0, ._L1
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
 .main_Exit:		# FUNCTION EXIT
-	lw    $ra, 0($fp)		#restore ra
-	move  $sp, $fp		#restore SP
-	lw    $fp, -4($fp)		#restore FP
-	jr    $ra		#return to caller
-.globl y		#global var
-.globl tester
-tester:		# FUNCTION ENTRY
-	sw    $ra, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-	sw    $fp, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-	addu  $fp, $sp, 8
-.tester_Exit:		# FUNCTION EXIT
 	lw    $ra, 0($fp)		#restore ra
 	move  $sp, $fp		#restore SP
 	lw    $fp, -4($fp)		#restore FP
