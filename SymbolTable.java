@@ -57,7 +57,7 @@ public class SymbolTable {
     };
 
     Hashtable table;
-	int offset = -4; //offsett for each symtable - it is always a new scope so starting at 0 for it 
+	int offset = 0; //offsett for each symtable - it is always a new scope so starting at 4
 
     SymbolTable () { table = new Hashtable(); }
 

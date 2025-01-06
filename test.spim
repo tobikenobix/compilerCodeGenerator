@@ -7,13 +7,9 @@ yeaha:  .word 0		#global static variable
 .text
 .globl yeaha		#global var
 .data
-abc:  .word 0		#global static variable
+sup:  .word 0		#global static variable
 .text
-.globl abc		#global var
-.data
-bestIntInTheWorld:  .word 0		#global static variable
-.text
-.globl bestIntInTheWorld		#global var
+.globl sup		#global var
 .globl main
 		# FUNCTION ENTRY main
 main:
@@ -23,75 +19,107 @@ main:
 	subu  $sp, $sp, 4
 	addu  $fp, $sp, 8
 		#  STATEMENTS
+	li    $a0, -1		#load true val 
+	sw    $a0, sup		#store value of global varsup
+	li    $a0, 0		#load false val
+	sw    $a0, 8($fp)		#store value of local vartut
 .data
-._L0:  .asciiz "Hello world"		#String Literal
+._L0:  .word 3		#Integer Literal
 .text
-	la    $a0, ._L0
-	li    $v0, 4
-	syscall
-	la    $a0, _.newline
-	li    $v0, 4
-	syscall
+	lw    $a0, ._L0
+	sw    $a0, 4($fp)		#store value of local varug
 .data
-._L1:  .asciiz "hello again"		#String Literal
+._L1:  .asciiz "hallo"		#String Literal
 .text
 	la    $a0, ._L1
-	sw    $a0, yeaha		#store value of yeaha
+	sw    $a0, 12($fp)		#store value of local varabc
 .data
-._L2:  .asciiz "abc"		#String Literal
+._L2:  .asciiz "is"		#String Literal
 .text
 	la    $a0, ._L2
-	sw    $a0, abc		#store value of abc
-	lw    $a0, yeaha		#load variable yeaha
-	li    $v0, 4
-	syscall
-	la    $a0, _.newline
-	li    $v0, 4
-	syscall
-.data
-._L3:  .word 3		#Integer Literal
-.text
-	lw    $a0, ._L3
-	sw    $a0, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-.data
-._L4:  .word 3		#Integer Literal
-.text
-	lw    $a0, ._L4
-	lw    $t1, 4($sp)
-	add   $a0, $t1, $a0
-	addiu $sp, $sp, 4		#POP
-	sw    $a0, bestIntInTheWorld		#store value of bestIntInTheWorld
-.data
-._L5:  .word 6		#Integer Literal
-.text
-	lw    $a0, ._L5
-	sw    $a0, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-.data
-._L6:  .word 3		#Integer Literal
-.text
-	lw    $a0, ._L6
-	sw    $a0, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-.data
-._L7:  .word 3		#Integer Literal
-.text
-	lw    $a0, ._L7
-	lw    $t1, 4($sp)
-	add   $a0, $t1, $a0
-	addiu $sp, $sp, 4		#POP
-	lw    $t1, 4($sp)
-	sub   $a0, $t1, $a0		#subtract
-	addiu $sp, $sp, 4		#POP
-	sw    $a0, bestIntInTheWorld		#store value of bestIntInTheWorld
-	lw    $a0, bestIntInTheWorld		#load variable bestIntInTheWorld
+	sw    $a0, yeaha		#store value of global varyeaha
+	lw    $a0, 4($fp)		#load local variable ug
 	li    $v0, 1
 	syscall
 	la    $a0, _.newline
 	li    $v0, 4
 	syscall
+	lw    $a0, 12($fp)		#load local variable abc
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+.data
+._L5:  .word 3		#Integer Literal
+.text
+	lw    $a0, ._L5
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 4($fp)		#load local variable ug
+	lw    $t1, 4($sp)
+	bne   $a0, $t1, ._L3		#Check if equal
+	li    $a0, -1		#Load true
+	j     ._L4		#Jump to end, equal
+._L3:		# False Label, in case equal failed
+	li    $a0, 0		#Load false
+._L4:		# End of equal
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L6		#If Statement
+		#  STATEMENTS
+.data
+._L7:  .asciiz "It works"		#String Literal
+.text
+	la    $a0, ._L7
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+._L6:		# If Statement End
+	lw    $a0, sup		#load variable sup
+	li    $t1, 0		#Load to comapre if false
+	beq   $a0, $t1, ._L8		#Check if first node is true
+	lw    $a0, 8($fp)		#load local variable tut
+	li    $t1, 0		#Load to comapre if false
+	beq   $a0, $t1, ._L8		#Check if second node is true
+	j     ._L9		#Jump to end, both nodes were true
+._L8:		# False Label, in case and failed
+	li    $a0, 0		#Load false
+._L9:		# End of and
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L10		#If Statement
+		#  STATEMENTS
+.data
+._L11:  .asciiz "hats of"		#String Literal
+.text
+	la    $a0, ._L11
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+._L10:		# If Statement End
 .main_Exit:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.globl test2
+		# FUNCTION ENTRY test2
+test2:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+		#  STATEMENTS
+.data
+._L12:  .word 1		#Integer Literal
+.text
+	lw    $a0, ._L12
+	sw    $a0, 4($fp)		#store value of local varhaha
+.test2_Exit:		# FUNCTION EXIT
 	lw    $ra, 0($fp)		#restore ra
 	move  $sp, $fp		#restore SP
 	lw    $fp, -4($fp)		#restore FP

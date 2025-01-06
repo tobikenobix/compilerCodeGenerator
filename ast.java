@@ -929,10 +929,14 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void cgen(){
-            //TODO: next goal make it work for local vars, and all other datatypes
             myExp.cgen();
-            //TODO currently only working for global vars
-            Codegen.generateWithComment("sw", "store value of " + myId.getStrVal(), "$a0", myId.getStrVal());
+            //check if myExp is local or global
+            if(myId.isLocal()){
+                Codegen.generateIndexed("sw", "$a0", Codegen.FP, myId.offset(), "store value of local var" + myId.getStrVal());
+            } else {
+                Codegen.generateWithComment("sw", "store value of global var" + myId.getStrVal(), "$a0", myId.getStrVal());
+            }
+            
     }
 
     // 2 kids
@@ -972,6 +976,18 @@ class IfStmtNode extends StmtNode {
             Errors.fatal(0, 0, "Non-boolean expression used as an if condition");
         }
         myStmtList.typeCheck();
+    }
+
+    public void cgen(){
+        myExp.cgen();
+        // compare if myExp is true and if not jump to the end of the if statement
+        //Codegen.genPush("$a0");
+        Codegen.generateWithComment("li", "Load to comapre if true", "$t1", Codegen.TRUE);
+        String falseLabel = Codegen.nextLabel();
+        Codegen.generateWithComment("bne", "If Statement", "$a0", "$t1", falseLabel);
+        myStmtList.cgen();
+        Codegen.genLabel(falseLabel, "If Statement End");
+        //Codegen.generateWithComment("addu", "Restore the stack", Codegen.SP, Codegen.SP, "4");
     }
 
     // 2 kids
@@ -1323,6 +1339,11 @@ class TrueNode extends ExpNode {
         p.print("true");
     }
 
+    public void cgen(){
+        // load the value of the variable into the accumulator
+        Codegen.generateWithComment("li","load true val ", "$a0", Codegen.TRUE);
+    }
+
     private int myLineNum;
     private int myColNum;
 }
@@ -1341,13 +1362,17 @@ class FalseNode extends ExpNode {
         return Types.BoolType;
     }
 
+    public void cgen() {
+        // load the value of the variable into the accumulator
+        Codegen.generateWithComment("li","load false val", "$a0", Codegen.FALSE);
+    }
+
     private int myLineNum;
     private int myColNum;
 }
 
 class IdNode extends ExpNode
 {   
-    //TODO: remove when done
     boolean isLocal;
     int offset;
     public IdNode(int lineNum, int charNum, String strVal) {
@@ -1384,6 +1409,7 @@ class IdNode extends ExpNode
     }
     int tempargs; //TODO delete this, this was used for debugging. As soon as project is finished this is not needed anymore
     int tempvars;
+    boolean tempLocal;
     public void methodNameAnalyisis(LinkedList<SymbolTable> symTabList, int scope, int type, FormalsListNode symArgTabList, int num_local_vars) {
         boolean exists = false;
         SymbolTable symTab = symTabList.getFirst();
@@ -1397,6 +1423,7 @@ class IdNode extends ExpNode
             myType = type;
             tempargs = symTabList.getFirst().lookup(myStrVal).getNumParams();
             tempvars = symTabList.getFirst().lookup(myStrVal).getNumLocalVars();
+            tempLocal = symTabList.getFirst().lookup(myStrVal).isLocal();
         } else {
             myType = Types.ErrorType;
             Errors.fatal(myLineNum, myCharNum, "Multiply declared identifier");
@@ -1425,6 +1452,8 @@ class IdNode extends ExpNode
             if (symTab.lookup(myStrVal) != null) {
                 exists = true;
                 myType = symTab.lookup(myStrVal).type();
+                isLocal = symTab.lookup(myStrVal).isLocal();
+                offset = symTab.lookup(myStrVal).offset();
             }
             symArgTabList = symTabList;
         }
@@ -1436,13 +1465,23 @@ class IdNode extends ExpNode
     }
 
     public void decompile(PrintWriter p, int indent) {
-	p.print(myStrVal + " (" + Types.ToString(myType) + " offset: "+offset+")" );
+	p.print(myStrVal + " (" + Types.ToString(myType) + " offset: "+offset+") + am I local "+ isLocal);
     }
+
+   
 
     public void cgen(){
         // TODO: this is implmented for global vars and printing, you might need to recheck if this works with everything
         // load the value of the variable into the accumulator
+        // for local vars
+
+        //System.out.println("I am " + myStrVal + " and I am local " + isLocal + " and my offset is " + offset);
+        // check fi the variable is local or global
+        if(isLocal){
+            Codegen.generateIndexed("lw", "$a0", Codegen.FP, offset, "load local variable " + myStrVal);
+        } else {
         Codegen.generateWithComment("lw","load variable " + myStrVal, "$a0", myStrVal);
+        }
     }
 
     private int myLineNum;
@@ -1459,6 +1498,12 @@ class IdNode extends ExpNode
     }
     public int getCharNum() {
         return myCharNum;
+    }
+    public boolean isLocal(){
+        return isLocal;
+    }
+    public int offset(){
+        return offset;
     }
     public int getType() {
         return myType;
@@ -1818,6 +1863,22 @@ class AndNode extends BinaryExpNode
         return returnType;
 
     }
+
+    public void cgen(){
+        myExp1.cgen();
+        String falseLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        // compare if myExp is true  and if not jump and set to false
+        Codegen.generateWithComment("li", "Load to comapre if false", "$t1", Codegen.FALSE);
+        Codegen.generateWithComment("beq", "Check if first node is true", "$a0", "$t1", falseLabel);
+        myExp2.cgen();
+        Codegen.generateWithComment("li", "Load to comapre if false", "$t1", Codegen.FALSE);
+        Codegen.generateWithComment("beq", "Check if second node is true", "$a0", "$t1", falseLabel);
+        Codegen.generateWithComment("j", "Jump to end, both nodes were true", endLabel);
+        Codegen.genLabel(falseLabel, "False Label, in case and failed");
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.genLabel(endLabel, "End of and");
+    }
 }
 
 class OrNode extends BinaryExpNode
@@ -1889,6 +1950,21 @@ class EqualsNode extends BinaryExpNode
         }
         return Types.BoolType;
 
+    }
+
+    public void cgen(){
+        String falseLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("bne", "Check if equal", "$a0", "$t1", falseLabel);
+        Codegen.generateWithComment("li", "Load true", "$a0", Codegen.TRUE);
+        Codegen.generateWithComment("j", "Jump to end, equal", endLabel);
+        Codegen.genLabel(falseLabel, "False Label, in case equal failed");
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.genLabel(endLabel, "End of equal");
     }
 }
 

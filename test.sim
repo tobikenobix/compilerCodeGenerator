@@ -1,15 +1,28 @@
 public class test {
     static String yeaha;
-    static String abc;
-    static int bestIntInTheWorld;
+    static boolean sup;
     public static void main(){
-        System.out.println("Hello world");
-        yeaha = "hello again";
-        abc = "abc";
-        System.out.println(yeaha);
-        bestIntInTheWorld = 3 + 3;
-        bestIntInTheWorld = 6 - (3+3);
-        System.out.println(bestIntInTheWorld);
+        int ug;
+        boolean tut;
+        String abc;
+        sup = true;
+        tut = false;
+        ug = 3;
+        abc = "hallo";
+        yeaha = "is";
+        System.out.println(ug);
+        System.out.println(abc);
+        if(3 == ug){
+            System.out.println("It works");
+        }
+        if (sup && tut){
+            System.out.println("hats of");
+        }
+        
+    }
 
+    public static void test2(){
+        int haha;
+        haha = 1;
     }
 }
