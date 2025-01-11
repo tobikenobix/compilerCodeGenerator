@@ -304,6 +304,10 @@ class FormalsListNode extends ASTnode {
         p.print(")");
     }
 
+    public void cgen(){
+        System.out.println("FormalsListNode cgen");
+    }
+
     public ArrayList<Integer> getFormalList(){
         return myList;
     }
@@ -394,7 +398,6 @@ class StmtListNode extends ASTnode {
         if(myStmts.length() > 0) {
             Codegen.generateHeaderComment(" STATEMENTS");
         }
-        // TODO: YOU ARE HERE
         try {
             for (myStmts.start(); myStmts.isCurrent(); myStmts.advance()) {
                 ((StmtNode)myStmts.getCurrent()).cgen();
@@ -461,6 +464,24 @@ class ExpListNode extends ASTnode {
     }
     public ArrayList<Integer> getExpList(){
         return myList;
+    }
+
+    public void cgen(){
+        // Ah it sucks to use this approach - I am sorry to whoever has to read this
+        ArrayList<ExpNode> expList = new ArrayList<ExpNode>();
+        try {
+            for (myExps.start(); myExps.isCurrent(); myExps.advance()) {
+                expList.add((ExpNode)myExps.getCurrent());
+            }
+            for (int i = expList.size() - 1; i >= 0; i--) {
+                expList.get(i).cgen();
+                Codegen.genPush("$a0");
+            }
+
+        } catch (NoCurrentException ex) {
+            System.err.println("unexpected NoCurrentException in ExpListNode.cgen");
+            System.exit(-1);
+        }
     }
 
     // sequence of kids (ExpNodes)
@@ -1118,6 +1139,11 @@ class CallStmtNode extends StmtNode {
            }
         }
     }
+
+    public void cgen(){
+        myExpList.cgen();
+        Codegen.generateWithComment("jal", "call method", myId.getStrVal());
+    }
     
 
     // 2 kids
@@ -1407,7 +1433,7 @@ class IdNode extends ExpNode
         }
         
     }
-    int tempargs; //TODO delete this, this was used for debugging. As soon as project is finished this is not needed anymore
+    int tempargs; // used for debugging.
     int tempvars;
     boolean tempLocal;
     public void methodNameAnalyisis(LinkedList<SymbolTable> symTabList, int scope, int type, FormalsListNode symArgTabList, int num_local_vars) {
@@ -1430,7 +1456,7 @@ class IdNode extends ExpNode
             ProgramNode.errorNameAnalysis = true;
         }
     }
-    // TODO: delte this, this was used for debugging. As soon as project is finished this is not needed anymore
+    // used for debugging. 
     int getTempargs(){
         return tempargs;
     }
@@ -1677,7 +1703,6 @@ class PlusNode extends BinaryExpNode
     }
 
     public void cgen(){
-        // TODO: as of now, only global vars
         myExp1.cgen();
         Codegen.genPush("$a0");
         myExp2.cgen();

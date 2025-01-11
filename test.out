@@ -1,30 +1,17 @@
 public class test (class offset: 4) + am I local false {
   static String yeaha (String offset: 4) + am I local false;
   static boolean sup (boolean offset: 8) + am I local false;
+  public static void test2 (method void offset: 0) + am I local false (int what (int offset: 4) + am I local true, int number (int offset: 8) + am I local true, int x (int offset: 12) + am I local true, String word (String offset: 16) + am I local true) {
+    System.out.println(what (int offset: 4) + am I local true);
+    System.out.println(number (int offset: 8) + am I local true);
+    System.out.println(x (int offset: 12) + am I local true);
+    System.out.println(word (String offset: 16) + am I local true);
+  }
+I have 0local vars
+I have 4arguments
   public static void main (method void offset: 0) + am I local false () {
-    int ug (int offset: 4) + am I local true;
-    boolean tut (boolean offset: 8) + am I local true;
-    String abc (String offset: 12) + am I local true;
-    sup (boolean offset: 8) + am I local false = true;
-    tut (boolean offset: 8) + am I local true = false;
-    ug (int offset: 4) + am I local true = 3;
-    abc (String offset: 12) + am I local true = "hallo";
-    yeaha (String offset: 4) + am I local false = "is";
-    System.out.println(ug (int offset: 4) + am I local true);
-    System.out.println(abc (String offset: 12) + am I local true);
-    if ((3 == ug (int offset: 4) + am I local true)) {
-      System.out.println("It works");
-    }
-    if ((sup (boolean offset: 8) + am I local false && tut (boolean offset: 8) + am I local true)) {
-      System.out.println("hats of");
-    }
+    test2 (method void offset: 0) + am I local false(3, 2, 1, "meins");
   }
-I have 3local vars
-I have 0arguments
-  public static void test2 (method void offset: 0) + am I local false () {
-    int haha (int offset: 4) + am I local true;
-    haha (int offset: 4) + am I local true = 1;
-  }
-I have 1local vars
+I have 0local vars
 I have 0arguments
 }
