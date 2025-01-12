@@ -346,9 +346,9 @@ class MethodBodyNode extends ASTnode {
         myStmtList.typeCheck();
     }
 
-    public void cgen(){
+    public void cgen(String returnLabel){
         //TODO: validate if a decl list cgen is needed
-        myStmtList.cgen();
+        myStmtList.cgen(returnLabel);
     }
 
     // 2 kids
@@ -394,13 +394,13 @@ class StmtListNode extends ASTnode {
             System.exit(-1);
         }
     }
-    public void cgen(){
+    public void cgen(String returnLabel){
         if(myStmts.length() > 0) {
             Codegen.generateHeaderComment(" STATEMENTS");
         }
         try {
             for (myStmts.start(); myStmts.isCurrent(); myStmts.advance()) {
-                ((StmtNode)myStmts.getCurrent()).cgen();
+                ((StmtNode)myStmts.getCurrent()).cgen(returnLabel);
             }
         } catch (NoCurrentException ex) {
             System.err.println("unexpected NoCurrentException in StmtListNode.cgen");
@@ -641,10 +641,10 @@ class MethodDeclNode extends DeclNode {
         Codegen.genPush("$ra");
         Codegen.genPush(Codegen.FP);
         Codegen.generate("addu",Codegen.FP, Codegen.SP, 8);
-        // TODO insert code gen for FormalsListNode
-        myBody.cgen();
+        String returnLabel = Codegen.nextLabel(); // save for return statement
+        myBody.cgen(returnLabel);
         // exit
-        Codegen.genLabel("." + myId.getStrVal() +"_Exit", "FUNCTION EXIT");
+        Codegen.genLabel(returnLabel, "FUNCTION EXIT");
         Codegen.generateIndexed("lw", "$ra", Codegen.FP , 0, "restore ra");
         Codegen.generateWithComment("move", "restore SP", Codegen.SP, Codegen.FP);
         Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -4, "restore FP");
@@ -868,7 +868,7 @@ class SwitchGroupNode extends ASTnode {
 abstract class StmtNode extends ASTnode {
     public abstract void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope);
     public abstract void typeCheck();
-    public void cgen(){
+    public void cgen(String returnLabel){
         //do nothing
         System.err.println("Oh no, seems like you forgot to cover this case: " + this.getClass());
     }
@@ -900,7 +900,7 @@ class PrintStmtNode extends StmtNode {
         }
     }
 
-    public void cgen(){
+    public void cgen(String returnLabel){
         myExp.cgen();
         //print the string
         Codegen.generate("li", "$v0", sysCallType);
@@ -949,7 +949,7 @@ class AssignStmtNode extends StmtNode {
         }
     }
 
-    public void cgen(){
+    public void cgen(String returnLabel){
             myExp.cgen();
             //check if myExp is local or global
             if(myId.isLocal()){
@@ -999,14 +999,14 @@ class IfStmtNode extends StmtNode {
         myStmtList.typeCheck();
     }
 
-    public void cgen(){
+    public void cgen(String returnLabel){
         myExp.cgen();
         // compare if myExp is true and if not jump to the end of the if statement
         //Codegen.genPush("$a0");
         Codegen.generateWithComment("li", "Load to comapre if true", "$t1", Codegen.TRUE);
         String falseLabel = Codegen.nextLabel();
         Codegen.generateWithComment("bne", "If Statement", "$a0", "$t1", falseLabel);
-        myStmtList.cgen();
+        myStmtList.cgen(returnLabel);
         Codegen.genLabel(falseLabel, "If Statement End");
         //Codegen.generateWithComment("addu", "Restore the stack", Codegen.SP, Codegen.SP, "4");
     }
@@ -1140,7 +1140,7 @@ class CallStmtNode extends StmtNode {
         }
     }
 
-    public void cgen(){
+    public void cgen(String returnLabel){
         myExpList.cgen();
         Codegen.generateWithComment("jal", "call method", myId.getStrVal());
     }
@@ -1164,6 +1164,10 @@ class ReturnStmtNode extends StmtNode {
     }
     public void typeCheck(){
         //do nothing
+    }
+
+    public void cgen(String returnLabel){
+        Codegen.generate("j", returnLabel);
     }
 }
 // this helper class has been added to handle return statements with values
@@ -1193,6 +1197,11 @@ class ReturnWithValueNode extends StmtNode {
         if(myExpType != Types.IntType){
             Errors.fatal(0, 0, "Return type does not match method return type int");
         }
+    }
+
+    public void cgen(String returnLabel){
+        myExp.cgen();
+        Codegen.generate("j", returnLabel);
     }
 
     // 1 kid
@@ -1577,6 +1586,11 @@ class CallExpNode extends ExpNode {
             return Types.IntType;
         }
         return myId.getType();
+    }
+
+    public void cgen(){
+        myExpList.cgen();
+        Codegen.generateWithComment("jal", "call method", myId.getStrVal());
     }
 
     // 2 kids
@@ -2090,6 +2104,21 @@ class GreaterNode extends BinaryExpNode
         }
         return returnType;
 
+    }
+
+    public void cgen(){
+        String trueLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("bgt", "Check if greater", "$t1", "$a0", trueLabel);
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.generateWithComment("j", "Jump to end, it's not greater", endLabel);
+        Codegen.genLabel(trueLabel, "True Label, in case greater");
+        Codegen.generateWithComment("li", "Load true", "$a0", Codegen.TRUE);
+        Codegen.genLabel(endLabel, "End of greater");
     }
 }
 

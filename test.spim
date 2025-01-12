@@ -10,40 +10,101 @@ yeaha:  .word 0		#global static variable
 sup:  .word 0		#global static variable
 .text
 .globl sup		#global var
-.globl test2
-		# FUNCTION ENTRY test2
-test2:
+.globl returner
+		# FUNCTION ENTRY returner
+returner:
 	sw    $ra, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
 	sw    $fp, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
 	addu  $fp, $sp, 8
 		#  STATEMENTS
-	lw    $a0, 4($fp)		#load local variable what
+.data
+._L3:  .word 5		#Integer Literal
+.text
+	lw    $a0, ._L3
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 4($fp)		#load local variable x
+	lw    $t1, 4($sp)
+	bgt   $t1, $a0, ._L1		#Check if greater
+	li    $a0, 0		#Load false
+	j     ._L2		#Jump to end, it's not greater
+._L1:		# True Label, in case greater
+	li    $a0, -1		#Load true
+._L2:		# End of greater
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L4		#If Statement
+		#  STATEMENTS
+.data
+._L5:  .asciiz "wuhu"		#String Literal
+.text
+	la    $a0, ._L5
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+.data
+._L6:  .word 5		#Integer Literal
+.text
+	lw    $a0, ._L6
+	j     ._L0
+._L4:		# If Statement End
+	lw    $a0, 4($fp)		#load local variable x
+	j     ._L0
+._L0:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.globl trivRec
+		# FUNCTION ENTRY trivRec
+trivRec:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+		#  STATEMENTS
+	lw    $a0, 4($fp)		#load local variable k
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+.data
+._L10:  .word 0		#Integer Literal
+.text
+	lw    $a0, ._L10
+	lw    $t1, 4($sp)
+	bgt   $t1, $a0, ._L8		#Check if greater
+	li    $a0, 0		#Load false
+	j     ._L9		#Jump to end, it's not greater
+._L8:		# True Label, in case greater
+	li    $a0, -1		#Load true
+._L9:		# End of greater
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L11		#If Statement
+		#  STATEMENTS
+	lw    $a0, 4($fp)		#load local variable k
 	li    $v0, 1
 	syscall
 	la    $a0, _.newline
 	li    $v0, 4
 	syscall
-	lw    $a0, 8($fp)		#load local variable number
-	li    $v0, 1
-	syscall
-	la    $a0, _.newline
-	li    $v0, 4
-	syscall
-	lw    $a0, 12($fp)		#load local variable x
-	li    $v0, 1
-	syscall
-	la    $a0, _.newline
-	li    $v0, 4
-	syscall
-	lw    $a0, 16($fp)		#load local variable word
-	li    $v0, 4
-	syscall
-	la    $a0, _.newline
-	li    $v0, 4
-	syscall
-.test2_Exit:		# FUNCTION EXIT
+	lw    $a0, 4($fp)		#load local variable k
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+.data
+._L12:  .word 1		#Integer Literal
+.text
+	lw    $a0, ._L12
+	lw    $t1, 4($sp)
+	sub   $a0, $t1, $a0		#subtract
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	jal   trivRec		#call method
+._L11:		# If Statement End
+._L7:		# FUNCTION EXIT
 	lw    $ra, 0($fp)		#restore ra
 	move  $sp, $fp		#restore SP
 	lw    $fp, -4($fp)		#restore FP
@@ -58,31 +119,13 @@ main:
 	addu  $fp, $sp, 8
 		#  STATEMENTS
 .data
-._L0:  .asciiz "meins"		#String Literal
+._L14:  .word 3		#Integer Literal
 .text
-	la    $a0, ._L0
+	lw    $a0, ._L14
 	sw    $a0, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
-.data
-._L1:  .word 1		#Integer Literal
-.text
-	lw    $a0, ._L1
-	sw    $a0, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-.data
-._L2:  .word 2		#Integer Literal
-.text
-	lw    $a0, ._L2
-	sw    $a0, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-.data
-._L3:  .word 3		#Integer Literal
-.text
-	lw    $a0, ._L3
-	sw    $a0, 0($sp)		#PUSH
-	subu  $sp, $sp, 4
-	jal   test2		#call method
-.main_Exit:		# FUNCTION EXIT
+	jal   trivRec		#call method
+._L13:		# FUNCTION EXIT
 	lw    $ra, 0($fp)		#restore ra
 	move  $sp, $fp		#restore SP
 	lw    $fp, -4($fp)		#restore FP

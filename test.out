@@ -1,16 +1,25 @@
 public class test (class offset: 4) + am I local false {
   static String yeaha (String offset: 4) + am I local false;
   static boolean sup (boolean offset: 8) + am I local false;
-  public static void test2 (method void offset: 0) + am I local false (int what (int offset: 4) + am I local true, int number (int offset: 8) + am I local true, int x (int offset: 12) + am I local true, String word (String offset: 16) + am I local true) {
-    System.out.println(what (int offset: 4) + am I local true);
-    System.out.println(number (int offset: 8) + am I local true);
-    System.out.println(x (int offset: 12) + am I local true);
-    System.out.println(word (String offset: 16) + am I local true);
+  public static int returner (method int offset: 0) + am I local false (int x (int offset: 4) + am I local true) {
+    if ((5 > x (int offset: 4) + am I local true)) {
+      System.out.println("wuhu");
+      return 5;
+    }
+    return x (int offset: 4) + am I local true;
   }
 I have 0local vars
-I have 4arguments
+I have 1arguments
+  public static void trivRec (method void offset: 0) + am I local false (int k (int offset: 4) + am I local true) {
+    if ((k (int offset: 4) + am I local true > 0)) {
+      System.out.println(k (int offset: 4) + am I local true);
+      trivRec (method void offset: 0) + am I local false((k (int offset: 4) + am I local true - 1));
+    }
+  }
+I have 0local vars
+I have 1arguments
   public static void main (method void offset: 0) + am I local false () {
-    test2 (method void offset: 0) + am I local false(3, 2, 1, "meins");
+    trivRec (method void offset: 0) + am I local false(3);
   }
 I have 0local vars
 I have 0arguments
