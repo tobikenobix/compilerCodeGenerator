@@ -2,11 +2,11 @@ public class test (class offset: 4) + am I local false {
   static String yeaha (String offset: 4) + am I local false;
   static boolean sup (boolean offset: 8) + am I local false;
   public static int returner (method int offset: 0) + am I local false (int x (int offset: 4) + am I local true) {
-    if ((5 > x (int offset: 4) + am I local true)) {
-      System.out.println("wuhu");
-      return 5;
-    }
-    return x (int offset: 4) + am I local true;
+    do {
+      System.out.println("inside the loop");
+      x (int offset: 4) + am I local true = (x (int offset: 4) + am I local true - 1);
+    } while ((x (int offset: 4) + am I local true > 5))
+    return 0;
   }
 I have 0local vars
 I have 1arguments
@@ -19,8 +19,10 @@ I have 1arguments
 I have 0local vars
 I have 1arguments
   public static void main (method void offset: 0) + am I local false () {
-    trivRec (method void offset: 0) + am I local false(3);
+    int k (int offset: 4) + am I local true;
+    k (int offset: 4) + am I local true = 9;
+    System.out.println(returner (method int offset: 0) + am I local false(10));
   }
-I have 0local vars
+I have 1local vars
 I have 0arguments
 }

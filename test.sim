@@ -4,11 +4,12 @@ public class test {
 
 
     public static int returner(int x){
-        if (5 > x){
-            System.out.println("wuhu");
-            return 5;
-        }
-            return x;
+         do {
+            System.out.println("inside the loop");
+            x = x-1;
+        
+         } while(x>5)
+         return 0;
    
     }
 
@@ -21,10 +22,13 @@ public class test {
 
 
     public static void main(){
+
+        int k;
+        k = 9;
+
         
-        //returner();
-       //System.out.println(returner(10));
-       trivRec(3);
+       System.out.println(returner(10));
+       //trivRec(3);
         
     }
 }

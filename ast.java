@@ -1057,6 +1057,20 @@ class IfElseStmtNode extends StmtNode {
         myElseStmtList.typeCheck();
     }
 
+    public void cgen(String returnLabel){
+        String elseLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp.cgen();
+        // compare if myExp is true and if not jump to else statement
+        Codegen.generateWithComment("li", "Load to comapre if true", "$t1", Codegen.TRUE);
+        Codegen.generateWithComment("bne", "If Statement", "$a0", "$t1", elseLabel);
+        myThenStmtList.cgen(returnLabel);
+        Codegen.generate("j", endLabel);
+        Codegen.genLabel(elseLabel, "Else Statement");
+        myElseStmtList.cgen(returnLabel);
+        Codegen.genLabel(endLabel, "If Else Statement End");
+    }
+
     // 3 kids
     private ExpNode myExp;
     private StmtListNode myThenStmtList;
@@ -1095,6 +1109,19 @@ class WhileStmtNode extends StmtNode {
             Errors.fatal(0, 0, "Non-boolean expression used as a while condition");
         }
         myStmtList.typeCheck();
+    }
+
+    public void cgen(String returnLabel){
+        String startLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        Codegen.genLabel(startLabel, "Start While Statment");
+        myExp.cgen();
+        //check if true
+        Codegen.generateWithComment("li", "loading true value", "$t1", Codegen.TRUE);
+        Codegen.generateWithComment("bne", "exit loop if not true anymore", "$a0", "$t1", endLabel);
+        myStmtList.cgen(returnLabel);
+        Codegen.generate("j", startLabel);
+        Codegen.genLabel(endLabel, "End of the while loop");
     }
 
     // 2 kids
@@ -1233,6 +1260,11 @@ class BlockStmtNode extends StmtNode {
     public void typeCheck(){
         myStmts.typeCheck();
     }
+
+    public void cgen(String returnLabel){
+        myVarDecls.cgen();
+        myStmts.cgen(returnLabel);
+    }    
     // 2 kids
     private DeclListNode myVarDecls;
     private StmtListNode myStmts;
@@ -1345,7 +1377,6 @@ class StringLitNode extends ExpNode {
             Codegen.generateDirective(".text");
         }
         // to prevent having to return the label with the cgen method, the label is stored in the accumulator
-        // TODOD: validate that this works, it just copies the string into the accumulator
         Codegen.generate("la", "$a0", myLabel);
        // Codegen.genPush("$t0");
        // Codegen.genPop("$a0");
