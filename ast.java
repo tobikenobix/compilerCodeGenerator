@@ -1681,11 +1681,11 @@ class UnaryMinusNode extends UnaryExpNode
     }
 
     public int getType(int lineNum, int charNum) {
-        if(myExp.getType() == Types.IntType){
-            return Types.IntType;
+        if(myExp.getType() != Types.IntType){
+            Errors.fatal(lineNum, charNum, "Unary minus operator applied to non-integer");
+            return Types.ErrorType;
         }
-        Errors.fatal(lineNum, charNum, "Unary minus operator applied to non-integer");
-        return Types.ErrorType;
+        return Types.IntType;
     }
 
     public void cgen(){
@@ -1853,9 +1853,15 @@ class TimesNode extends BinaryExpNode
         if (myExp1 instanceof BinaryExpNode){
             type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
         }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
         if (myExp2 instanceof BinaryExpNode){
             type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
         }
         int returnType = Types.IntType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
@@ -1874,6 +1880,18 @@ class TimesNode extends BinaryExpNode
         return returnType;
 
     }
+
+    public void cgen(){
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("mult", "multiply", "$a0", "$t1");
+        Codegen.generate("mflo", "$a0");
+        Codegen.generateWithComment("addiu", "POP", Codegen.SP, Codegen.SP, "4");
+    }
+
+
 }
 
 class DivideNode extends BinaryExpNode
@@ -1894,7 +1912,13 @@ class DivideNode extends BinaryExpNode
         if (myExp1 instanceof BinaryExpNode){
             type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
         }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         if (myExp2 instanceof BinaryExpNode){
             type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
         }
@@ -1914,6 +1938,16 @@ class DivideNode extends BinaryExpNode
         }
         return returnType;
 
+    }
+
+    public void cgen(){
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("div", "divide", "$t1", "$a0");
+        Codegen.generate("mflo", "$a0");
+        Codegen.generateWithComment("addiu", "POP", Codegen.SP, Codegen.SP, "4");
     }
 }
 

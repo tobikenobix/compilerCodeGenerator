@@ -19,26 +19,37 @@ returner:
 	subu  $sp, $sp, 4
 	addu  $fp, $sp, 8
 		#  STATEMENTS
-._L1:		# Start While Statment
-	lw    $a0, 4($fp)		#load local variable x
+	li    $a0, -1		#load true val 
+	sw    $a0, sup		#store value of global varsup
+.data
+._L1:  .word 1		#Integer Literal
+.text
+	lw    $a0, ._L1
 	sw    $a0, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
 .data
-._L5:  .word 5		#Integer Literal
+._L2:  .word 1		#Integer Literal
 .text
-	lw    $a0, ._L5
+	lw    $a0, ._L2
+	neg   $a0, $a0
 	lw    $t1, 4($sp)
-	bgt   $t1, $a0, ._L3		#Check if greater
-	li    $a0, 0		#Load false
-	j     ._L4		#Jump to end, it's not greater
-._L3:		# True Label, in case greater
-	li    $a0, -1		#Load true
-._L4:		# End of greater
-	li    $t1, -1		#loading true value
-	bne   $a0, $t1, ._L2		#exit loop if not true anymore
+	mult  $a0, $t1		#multiply
+	mflo  $a0
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, 8($fp)		#store value of local vara
+	lw    $a0, sup		#load variable sup
+	li    $t1, -1		#load true value
+	bne   $a0, $t1, ._L3		#if false jump to make it true
+	li    $a0, 0		#change true to false
+	j     ._L4
+._L3:
+	li    $a0, -1		#change false to true
+._L4:
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L5		#If Statement
 		#  STATEMENTS
 .data
-._L6:  .asciiz "inside the loop"		#String Literal
+._L6:  .asciiz "woot"		#String Literal
 .text
 	la    $a0, ._L6
 	li    $v0, 4
@@ -46,23 +57,22 @@ returner:
 	la    $a0, _.newline
 	li    $v0, 4
 	syscall
-	lw    $a0, 4($fp)		#load local variable x
+._L5:		# If Statement End
+.data
+._L7:  .word 2		#Integer Literal
+.text
+	lw    $a0, ._L7
 	sw    $a0, 0($sp)		#PUSH
 	subu  $sp, $sp, 4
 .data
-._L7:  .word 1		#Integer Literal
-.text
-	lw    $a0, ._L7
-	lw    $t1, 4($sp)
-	sub   $a0, $t1, $a0		#subtract
-	addiu $sp, $sp, 4		#POP
-	sw    $a0, 4($fp)		#store value of local varx
-	j     ._L1
-._L2:		# End of the while loop
-.data
-._L8:  .word 0		#Integer Literal
+._L8:  .word 1		#Integer Literal
 .text
 	lw    $a0, ._L8
+	neg   $a0, $a0
+	lw    $t1, 4($sp)
+	div   $t1, $a0		#divide
+	mflo  $a0
+	addiu $sp, $sp, 4		#POP
 	j     ._L0
 ._L0:		# FUNCTION EXIT
 	lw    $ra, 0($fp)		#restore ra
