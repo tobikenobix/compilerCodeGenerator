@@ -1640,6 +1640,8 @@ abstract class UnaryExpNode extends ExpNode {
 
     public abstract int getType(int lineNum, int charNum);
 
+    public abstract void cgen();
+
     // one child
     protected ExpNode myExp;
 }
@@ -1685,6 +1687,11 @@ class UnaryMinusNode extends UnaryExpNode
         Errors.fatal(lineNum, charNum, "Unary minus operator applied to non-integer");
         return Types.ErrorType;
     }
+
+    public void cgen(){
+        myExp.cgen();
+        Codegen.generate("neg", "$a0", "$a0");
+    }
 }
 
 class NotNode extends UnaryExpNode
@@ -1705,6 +1712,22 @@ class NotNode extends UnaryExpNode
         }
         Errors.fatal(lineNum, charNum, "Logical negation operator applied to non-boolean");
         return Types.ErrorType;
+    }
+    
+    public void cgen(){
+        // I don't like the way I did this, but it was the only way I could think of
+        myExp.cgen();
+        String makeTrueLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        Codegen.generateWithComment("li", "load true value", "$t1", Codegen.TRUE);
+        Codegen.generateWithComment("bne", "if false jump to make it true", "$a0", "$t1", makeTrueLabel);
+        // if false make it true
+        Codegen.generateWithComment("li", "change true to false", "$a0", Codegen.FALSE);
+        Codegen.generate("j", endLabel);
+        Codegen.genLabel(makeTrueLabel);
+        Codegen.generateWithComment("li", "change false to true", "$a0", Codegen.TRUE);
+        Codegen.genLabel(endLabel);
+
     }
 }
 
