@@ -3,19 +3,50 @@ public class test {
     static boolean sup;
 
 
-    public static int returner(int x){
+    public static int returner(int x, int y, int z, String wow){
         int a;
-         sup = true;
-         
-         a = 1 * -1;
-
-         if (!sup){
-            System.out.println("woot");
-         }
-        return 2/ -1;
+        int b;
+        String hui;
+        int p;
+        b = 3;
+        a = 2;
+        p = 5;
+        System.out.println(wow);
+        wow = "hi";
+        hui = "oh oh";
+        z = x + y;
+        return z + b;
     }
 
-    public static void trivRec(int k){
+    public static int some(){
+        int k;
+        int j;
+        int l;
+        int m;
+        l = 1;
+        m = 2;
+        k = 2;
+        j = 1;
+        return k + j;
+    }
+
+    public static void uff(){
+        int a;
+        int b;
+        int c;
+        String hallo;
+        a = 1;
+        b = 2;
+        c = a +b;
+        hallo = "welt";
+        if(c > a){
+            System.out.println(a);
+        } else{
+            System.out.println(hallo);
+        }
+    }
+
+        public static void trivRec(int k){
         if (k > 0){
             System.out.println(k);
             trivRec(k-1);
@@ -29,8 +60,10 @@ public class test {
         k = 9;
 
         
-       System.out.println(returner(10));
-       //trivRec(3);
-        
+      System.out.println(returner(10, 2, 1, "sag mal"));
+       System.out.println(some());
+       some();
+       uff();
+       trivRec(5);
     }
 }

@@ -641,6 +641,7 @@ class MethodDeclNode extends DeclNode {
         Codegen.genPush("$ra");
         Codegen.genPush(Codegen.FP);
         Codegen.generate("addu",Codegen.FP, Codegen.SP, 8);
+        Codegen.generate("subu", Codegen.SP, Codegen.SP, num_local_vars*4 + 8);
         String returnLabel = Codegen.nextLabel(); // save for return statement
         myBody.cgen(returnLabel);
         // exit
