@@ -635,6 +635,7 @@ class MethodDeclNode extends DeclNode {
     }
     public void cgen(){
         // entry
+        Codegen.generateDirective(".text");
         Codegen.generateDirective(".globl", myId.getStrVal());
         Codegen.generateHeaderComment("FUNCTION ENTRY " + myId.getStrVal());
         Codegen.genLabel(myId.getStrVal());
