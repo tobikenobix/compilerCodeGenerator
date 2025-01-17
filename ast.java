@@ -567,9 +567,9 @@ class FieldDeclNode extends DeclNode {
     public void cgen(){ 
         // define static vars as global vars
         Codegen.generateDirective(".data");
-        Codegen.generateLabeled(myId.getStrVal(), ".word", "global static variable", "0");
+        Codegen.generateLabeled("_" + myId.getStrVal(), ".word", "global static variable", "0");
         Codegen.generateDirective(".text");
-        Codegen.generateDirectiveWithComment(".globl", "global var", myId.getStrVal());
+        Codegen.generateDirectiveWithComment(".globl", "global var", "_" + myId.getStrVal());
     }
 
 
@@ -957,7 +957,7 @@ class AssignStmtNode extends StmtNode {
             if(myId.isLocal()){
                 Codegen.generateIndexed("sw", "$a0", Codegen.FP, myId.offset(), "store value of local var" + myId.getStrVal());
             } else {
-                Codegen.generateWithComment("sw", "store value of global var" + myId.getStrVal(), "$a0", myId.getStrVal());
+                Codegen.generateWithComment("sw", "store value of global var" + "_"+myId.getStrVal(), "$a0", "_" + myId.getStrVal());
             }
             
     }
@@ -1343,7 +1343,7 @@ class IntLitNode extends ExpNode {
     }
 
     public void cgen(){
-        String myLabel="";
+       /*  String myLabel="";
         if (myLabel.isEmpty()){ //check if label is set
             Codegen.generateDirective(".data");
             myLabel = Codegen.nextLabel();
@@ -1351,7 +1351,8 @@ class IntLitNode extends ExpNode {
             Codegen.generateDirective(".text");
         }
         // copy int val to accumulator
-        Codegen.generate("lw", "$a0", myLabel);
+        Codegen.generate("lw", "$a0", myLabel); */
+        Codegen.generateWithComment("li", "load int val", "$a0", myIntVal+"");
     }
 
     private int myLineNum;
@@ -1548,7 +1549,7 @@ class IdNode extends ExpNode
         if(isLocal){
             Codegen.generateIndexed("lw", "$a0", Codegen.FP, offset, "load local variable " + myStrVal);
         } else {
-        Codegen.generateWithComment("lw","load variable " + myStrVal, "$a0", myStrVal);
+        Codegen.generateWithComment("lw","load variable " + "_"+myStrVal, "$a0", "_"+myStrVal);
         }
     }
 
@@ -1660,6 +1661,10 @@ abstract class BinaryExpNode extends ExpNode
     }
     public abstract int getType(int lineNum, int charNum);
 
+    public void cgen(){
+        System.out.println("Oh no, you forgot to implement cgen for " + this.getClass());
+    }
+
     // two kids
     protected ExpNode myExp1;
     protected ExpNode myExp2;
@@ -1752,8 +1757,22 @@ class PlusNode extends BinaryExpNode
     }
 
     public int getType(int lineNum, int charNum){
-        int type1 = myExp1.getType();
+
+         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         int returnType = Types.IntType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for addition");
@@ -1803,9 +1822,16 @@ class MinusNode extends BinaryExpNode
         if (myExp1 instanceof BinaryExpNode){
             type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
         }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
         if (myExp2 instanceof BinaryExpNode){
             type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
         }
         int returnType = Types.IntType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
@@ -1971,7 +1997,13 @@ class AndNode extends BinaryExpNode
         if (myExp1 instanceof BinaryExpNode){
             type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
         }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         if (myExp2 instanceof BinaryExpNode){
             type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
         }
@@ -2028,7 +2060,13 @@ class OrNode extends BinaryExpNode
         if (myExp1 instanceof BinaryExpNode){
             type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
         }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         if (myExp2 instanceof BinaryExpNode){
             type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
         }
@@ -2049,6 +2087,20 @@ class OrNode extends BinaryExpNode
         return returnType;
 
     }
+
+    public void cgen(){
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        //check if first node is true - if so jump to end
+        Codegen.generateWithComment("li", "load true value for logical or", "$t1", Codegen.TRUE);
+        Codegen.generateWithComment("beq", "if first node is true, or is true", "$a0", "$t1", endLabel);
+        myExp2.cgen();
+        //check if second node is true 
+        Codegen.generateWithComment("beq", "if second node is true, or is true", "$a0", "$t1", endLabel);
+        // load false value in $a0 as return - or failed, not sure if I even need this cgen of exp should set reg $a0 correctly
+        Codegen.generateWithComment("li", "load false value for logical or", "$a0", Codegen.FALSE);
+        Codegen.genLabel(endLabel, "End of logical or");
+    }
 }
 
 class EqualsNode extends BinaryExpNode
@@ -2067,7 +2119,19 @@ class EqualsNode extends BinaryExpNode
 
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for equal comparison");
             return Types.ErrorType;
@@ -2113,7 +2177,19 @@ class NotEqualsNode extends BinaryExpNode
 
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for not- equal comparison");
             return Types.ErrorType;
@@ -2124,6 +2200,21 @@ class NotEqualsNode extends BinaryExpNode
         }
         return Types.BoolType;
 
+    }
+
+    public void cgen(){
+        String trueLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("bne", "Check if not equal", "$a0", "$t1", trueLabel);
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.generateWithComment("j", "Jump to end, not equal", endLabel);
+        Codegen.genLabel(trueLabel, "True Label, in case not equal");
+        Codegen.generateWithComment("li", "Load true", "$a0", Codegen.TRUE);
+        Codegen.genLabel(endLabel, "End of not equal");
     }
 }
 
@@ -2142,7 +2233,19 @@ class LessNode extends BinaryExpNode
     }
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         int returnType = Types.BoolType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for less operation");
@@ -2159,6 +2262,21 @@ class LessNode extends BinaryExpNode
         }
         return returnType;
 
+    }
+
+    public void cgen(){
+        String trueLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("blt", "comapre the two values", "$t1", "$a0", trueLabel);
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.generateWithComment("j", "Jump to end, it's not less", endLabel);
+        Codegen.genLabel(trueLabel, "True Label, in case less");
+        Codegen.generateWithComment("li", "Load true", "$a0", Codegen.TRUE);
+        Codegen.genLabel(endLabel, "End of less");
     }
 }
 
@@ -2177,7 +2295,19 @@ class GreaterNode extends BinaryExpNode
     }
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         int returnType = Types.BoolType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for greater");
@@ -2228,7 +2358,19 @@ class LessEqNode extends BinaryExpNode
 
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         int returnType = Types.BoolType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for less equals");
@@ -2245,6 +2387,21 @@ class LessEqNode extends BinaryExpNode
         }
         return returnType;
 
+    }
+
+    public void cgen(){
+        String trueLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("ble", "comapre the two values", "$t1", "$a0", trueLabel);
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.generateWithComment("j", "Jump to end, it's not less", endLabel);
+        Codegen.genLabel(trueLabel, "True Label, in case less");
+        Codegen.generateWithComment("li", "Load true", "$a0", Codegen.TRUE);
+        Codegen.genLabel(endLabel, "End of less");
     }
 }
 
@@ -2264,7 +2421,19 @@ class GreaterEqNode extends BinaryExpNode
 
     public int getType(int lineNum, int charNum){
         int type1 = myExp1.getType();
+        if (myExp1 instanceof BinaryExpNode){
+            type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
+        }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
+        if (myExp2 instanceof BinaryExpNode){
+            type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         int returnType = Types.BoolType;
         if(type1 == Types.ErrorType || type2 == Types.ErrorType) {
             Errors.fatal(lineNum, charNum, "Invalid expression for greater equals");
@@ -2281,6 +2450,21 @@ class GreaterEqNode extends BinaryExpNode
         }
         return returnType;
 
+    }
+
+    public void cgen(){
+        String trueLabel = Codegen.nextLabel();
+        String endLabel = Codegen.nextLabel();
+        myExp1.cgen();
+        Codegen.genPush("$a0");
+        myExp2.cgen();
+        Codegen.generate("lw", "$t1", "4($sp)");
+        Codegen.generateWithComment("bge", "comapre the two values", "$t1", "$a0", trueLabel);
+        Codegen.generateWithComment("li", "Load false", "$a0", Codegen.FALSE);
+        Codegen.generateWithComment("j", "Jump to end, it's not less", endLabel);
+        Codegen.genLabel(trueLabel, "True Label, in case less");
+        Codegen.generateWithComment("li", "Load true", "$a0", Codegen.TRUE);
+        Codegen.genLabel(endLabel, "End of less");
     }
 }
 
@@ -2303,7 +2487,13 @@ class PowerNode extends BinaryExpNode
         if (myExp1 instanceof BinaryExpNode){
             type1 = ((BinaryExpNode)myExp1).getType(lineNum, charNum);
         }
+        if (myExp1 instanceof UnaryExpNode){
+            type1 = ((UnaryExpNode)myExp1).getType(lineNum, charNum);
+        }
         int type2 = myExp2.getType();
+        if (myExp2 instanceof UnaryExpNode){
+            type2 = ((UnaryExpNode)myExp2).getType(lineNum, charNum);
+        }
         if (myExp2 instanceof BinaryExpNode){
             type2 = ((BinaryExpNode)myExp2).getType(lineNum, charNum);
         }
