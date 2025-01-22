@@ -53,17 +53,39 @@ public class test {
         }
     }
 
+       public static void test(int aa,int bb, int cc , int dd, int ee,int ff,int gg,int hh,int ii,int jj){
+    int erster;
+    int zweiter;
+    int dritter;
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    int i;
+    int j;
+    erster = 1;
+    zweiter = 2;
+    dritter = 3;
+    d = 4;
+    e = 5;
+    f = 6;
+    g = 7;
+    h = 8;
+    i = 9;
+    j = 10;
+    ff = d + ee;
+    System.out.println(aa);
+    System.out.println(ff);
+   }
+
+   public static void caller(){
+    test(2,2,2,2,2,2,2,2,2,2);
+   }
+
 
     public static void main(){
-
-        int k;
-        k = 9;
-
-        
-      System.out.println(returner(10, 2, 1, "sag mal"));
-       System.out.println(some());
-       some();
-       uff();
-       trivRec(5);
+        returner(1,2,3,"hi");
+        System.out.println(some());
     }
 }

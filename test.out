@@ -55,15 +55,42 @@ I have 0arguments
   }
 I have 0local vars
 I have 1arguments
-  public static void main (method void offset: 0) + am I local false () {
-    int k (int offset: 4) + am I local true;
-    k (int offset: 4) + am I local true = 9;
-    System.out.println(returner (method int offset: 0) + am I local false(10, 2, 1, "sag mal"));
-    System.out.println(some (method int offset: 0) + am I local false());
-    some (method int offset: 0) + am I local false();
-    uff (method void offset: 0) + am I local false();
-    trivRec (method void offset: 0) + am I local false(5);
+  public static void test (method void offset: 0) + am I local false (int aa (int offset: 4) + am I local true, int bb (int offset: 8) + am I local true, int cc (int offset: 12) + am I local true, int dd (int offset: 16) + am I local true, int ee (int offset: 20) + am I local true, int ff (int offset: 24) + am I local true, int gg (int offset: 28) + am I local true, int hh (int offset: 32) + am I local true, int ii (int offset: 36) + am I local true, int jj (int offset: 40) + am I local true) {
+    int erster (int offset: 44) + am I local true;
+    int zweiter (int offset: 48) + am I local true;
+    int dritter (int offset: 52) + am I local true;
+    int d (int offset: 56) + am I local true;
+    int e (int offset: 60) + am I local true;
+    int f (int offset: 64) + am I local true;
+    int g (int offset: 68) + am I local true;
+    int h (int offset: 72) + am I local true;
+    int i (int offset: 76) + am I local true;
+    int j (int offset: 80) + am I local true;
+    erster (int offset: 44) + am I local true = 1;
+    zweiter (int offset: 48) + am I local true = 2;
+    dritter (int offset: 52) + am I local true = 3;
+    d (int offset: 56) + am I local true = 4;
+    e (int offset: 60) + am I local true = 5;
+    f (int offset: 64) + am I local true = 6;
+    g (int offset: 68) + am I local true = 7;
+    h (int offset: 72) + am I local true = 8;
+    i (int offset: 76) + am I local true = 9;
+    j (int offset: 80) + am I local true = 10;
+    ff (int offset: 24) + am I local true = (d (int offset: 56) + am I local true + ee (int offset: 20) + am I local true);
+    System.out.println(aa (int offset: 4) + am I local true);
+    System.out.println(ff (int offset: 24) + am I local true);
   }
-I have 1local vars
+I have 10local vars
+I have 10arguments
+  public static void caller (method void offset: 0) + am I local false () {
+    test (class offset: 4) + am I local false(2, 2, 2, 2, 2, 2, 2, 2, 2, 2);
+  }
+I have 0local vars
+I have 0arguments
+  public static void main (method void offset: 0) + am I local false () {
+    returner (method int offset: 0) + am I local false(1, 2, 3, "hi");
+    System.out.println(some (method int offset: 0) + am I local false());
+  }
+I have 0local vars
 I have 0arguments
 }

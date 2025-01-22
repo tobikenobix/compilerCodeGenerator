@@ -641,7 +641,9 @@ class MethodDeclNode extends DeclNode {
         Codegen.genLabel(myId.getStrVal());
         Codegen.genPush("$ra");
         Codegen.genPush(Codegen.FP);
+        //if(myId.getStrVal().equals("main")) Codegen.generate("addu",Codegen.FP, Codegen.SP, 8);
         Codegen.generate("addu",Codegen.FP, Codegen.SP, 8);
+        // TODO stack pointer needs space for all arguments called functions have
         Codegen.generate("subu", Codegen.SP, Codegen.SP, num_local_vars*4 + 8);
         String returnLabel = Codegen.nextLabel(); // save for return statement
         myBody.cgen(returnLabel);
@@ -879,7 +881,7 @@ abstract class StmtNode extends ASTnode {
 class PrintStmtNode extends StmtNode {
     public PrintStmtNode(ExpNode exp) {
 	myExp = exp;
-    }
+    } 
     
     public void nameAnalysis(LinkedList<SymbolTable> symTabList, int scope) {
         myExp.lookup(symTabList, scope);
@@ -1170,6 +1172,7 @@ class CallStmtNode extends StmtNode {
     }
 
     public void cgen(String returnLabel){
+        Codegen.generateWithComment("subu", "allocate space for arguments", Codegen.SP, Codegen.SP, myExpList.length()*4+"");
         myExpList.cgen();
         Codegen.generateWithComment("jal", "call method", myId.getStrVal());
     }
@@ -1623,6 +1626,7 @@ class CallExpNode extends ExpNode {
     }
 
     public void cgen(){
+        System.out.println("I got reached");
         myExpList.cgen();
         Codegen.generateWithComment("jal", "call method", myId.getStrVal());
     }
