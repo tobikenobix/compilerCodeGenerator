@@ -1,0 +1,352 @@
+	 .data
+_true: .asciiz "true"
+_false: .asciiz "false"
+_.newline: .asciiz "\n"
+.data
+_yeaha:  .word 0		#global static variable
+.text
+.globl _yeaha		#global var
+.data
+_sup:  .word 0		#global static variable
+.text
+.globl _sup		#global var
+.text
+.globl returner
+		# FUNCTION ENTRY returner
+returner:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 8
+		#  STATEMENTS
+	li    $a0, 3		#load int val
+	sw    $a0, 24($fp)		#store value of local varb
+	li    $a0, 2		#load int val
+	sw    $a0, 20($fp)		#store value of local vara
+	li    $a0, 5		#load int val
+	sw    $a0, 32($fp)		#store value of local varp
+	lw    $a0, 16($fp)		#load local variable wow
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+.data
+._L1:  .asciiz "hi"		#String Literal
+.text
+	la    $a0, ._L1
+	sw    $a0, 16($fp)		#store value of local varwow
+.data
+._L2:  .asciiz "oh oh"		#String Literal
+.text
+	la    $a0, ._L2
+	sw    $a0, 28($fp)		#store value of local varhui
+	lw    $a0, 4($fp)		#load local variable x
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 8($fp)		#load local variable y
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, 12($fp)		#store value of local varz
+	lw    $a0, 12($fp)		#load local variable z
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 24($fp)		#load local variable b
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	j     ._L0
+._L0:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.text
+.globl some
+		# FUNCTION ENTRY some
+some:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 8
+		#  STATEMENTS
+	li    $a0, 1		#load int val
+	sw    $a0, 12($fp)		#store value of local varl
+	li    $a0, 2		#load int val
+	sw    $a0, 16($fp)		#store value of local varm
+	li    $a0, 2		#load int val
+	sw    $a0, 4($fp)		#store value of local vark
+	li    $a0, 1		#load int val
+	sw    $a0, 8($fp)		#store value of local varj
+	lw    $a0, 4($fp)		#load local variable k
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 8($fp)		#load local variable j
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	j     ._L3
+._L3:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.text
+.globl uff
+		# FUNCTION ENTRY uff
+uff:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 24
+		#  STATEMENTS
+	li    $a0, 1		#load int val
+	sw    $a0, 4($fp)		#store value of local vara
+	li    $a0, 2		#load int val
+	sw    $a0, 8($fp)		#store value of local varb
+	lw    $a0, 4($fp)		#load local variable a
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 8($fp)		#load local variable b
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, 12($fp)		#store value of local varc
+.data
+._L5:  .asciiz "welt"		#String Literal
+.text
+	la    $a0, ._L5
+	sw    $a0, 16($fp)		#store value of local varhallo
+	lw    $a0, 12($fp)		#load local variable c
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 4($fp)		#load local variable a
+	lw    $t1, 4($sp)
+	bgt   $t1, $a0, ._L8		#Check if greater
+	li    $a0, 0		#Load false
+	j     ._L9		#Jump to end, it's not greater
+._L8:		# True Label, in case greater
+	li    $a0, -1		#Load true
+._L9:		# End of greater
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L6		#If Statement
+		#  STATEMENTS
+	lw    $a0, 4($fp)		#load local variable a
+	li    $v0, 1
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+	j     ._L7
+._L6:		# Else Statement
+		#  STATEMENTS
+	lw    $a0, 16($fp)		#load local variable hallo
+	li    $v0, 4
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+._L7:		# If Else Statement End
+._L4:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.text
+.globl trivRec
+		# FUNCTION ENTRY trivRec
+trivRec:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 8
+		#  STATEMENTS
+	lw    $a0, 4($fp)		#load local variable k
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 0		#load int val
+	lw    $t1, 4($sp)
+	bgt   $t1, $a0, ._L11		#Check if greater
+	li    $a0, 0		#Load false
+	j     ._L12		#Jump to end, it's not greater
+._L11:		# True Label, in case greater
+	li    $a0, -1		#Load true
+._L12:		# End of greater
+	li    $t1, -1		#Load to comapre if true
+	bne   $a0, $t1, ._L13		#If Statement
+		#  STATEMENTS
+	lw    $a0, 4($fp)		#load local variable k
+	li    $v0, 1
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+	subu  $sp, $sp, 4		#allocate space for arguments
+	lw    $a0, 4($fp)		#load local variable k
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 1		#load int val
+	lw    $t1, 4($sp)
+	sub   $a0, $t1, $a0		#subtract
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	jal   trivRec		#call method
+._L13:		# If Statement End
+._L10:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.text
+.globl test
+		# FUNCTION ENTRY test
+test:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 48
+		#  STATEMENTS
+	li    $a0, 1		#load int val
+	sw    $a0, 44($fp)		#store value of local varerster
+	li    $a0, 2		#load int val
+	sw    $a0, 48($fp)		#store value of local varzweiter
+	li    $a0, 3		#load int val
+	sw    $a0, 52($fp)		#store value of local vardritter
+	li    $a0, 4		#load int val
+	sw    $a0, 56($fp)		#store value of local vard
+	li    $a0, 5		#load int val
+	sw    $a0, 60($fp)		#store value of local vare
+	li    $a0, 6		#load int val
+	sw    $a0, 64($fp)		#store value of local varf
+	li    $a0, 7		#load int val
+	sw    $a0, 68($fp)		#store value of local varg
+	li    $a0, 8		#load int val
+	sw    $a0, 72($fp)		#store value of local varh
+	li    $a0, 9		#load int val
+	sw    $a0, 76($fp)		#store value of local vari
+	li    $a0, 10		#load int val
+	sw    $a0, 80($fp)		#store value of local varj
+	lw    $a0, 56($fp)		#load local variable d
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	lw    $a0, 20($fp)		#load local variable ee
+	lw    $t1, 4($sp)
+	add   $a0, $t1, $a0
+	addiu $sp, $sp, 4		#POP
+	sw    $a0, 24($fp)		#store value of local varff
+	lw    $a0, 4($fp)		#load local variable aa
+	li    $v0, 1
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+	lw    $a0, 24($fp)		#load local variable ff
+	li    $v0, 1
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+._L14:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.text
+.globl caller
+		# FUNCTION ENTRY caller
+caller:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 8
+		#  STATEMENTS
+	subu  $sp, $sp, 40		#allocate space for arguments
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	jal   test		#call method
+._L15:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller
+.text
+.globl main
+		# FUNCTION ENTRY main
+main:
+	sw    $ra, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	sw    $fp, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	addu  $fp, $sp, 8
+	subu  $sp, $sp, 8
+		#  STATEMENTS
+	subu  $sp, $sp, 16		#allocate space for arguments
+.data
+._L17:  .asciiz "hi"		#String Literal
+.text
+	la    $a0, ._L17
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 3		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 2		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	li    $a0, 1		#load int val
+	sw    $a0, 0($sp)		#PUSH
+	subu  $sp, $sp, 4
+	jal   returner		#call method
+	jal   some		#call method
+	li    $v0, 1
+	syscall
+	la    $a0, _.newline
+	li    $v0, 4
+	syscall
+._L16:		# FUNCTION EXIT
+	lw    $ra, 0($fp)		#restore ra
+	move  $sp, $fp		#restore SP
+	lw    $fp, -4($fp)		#restore FP
+	jr    $ra		#return to caller

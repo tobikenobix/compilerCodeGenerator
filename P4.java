@@ -1,29 +1,29 @@
 import java.io.*;
+import java_cup.runtime.*;
 import java.util.LinkedList;
 
-import java_cup.runtime.*;
-
 // **********************************************************************
-// Main program to test the simple static checker.
+// Main program to test the simple parser.
 //
 // There should be 2 command-line arguments:
 //    1. the file to be parsed
-//    2. the output file into which the AST built by the parser
-//       should be unparsed.
-// The program opens the files, creates a scanner and a parser, and
-// calls the parser.  If the parse is successful, the name analyzer is
-// called and the AST is then unparsed.  If there have been no
-// errors yet, the type checker is called.
+//    2. the output file into which the AST built by the parser should be
+//       decompiled
+// The program opens the two files, creates a scanner and a parser, and
+// calls the parser.  If the parse is successful, the AST is decompiled.
 // **********************************************************************
 
-public class P5 {
+// only in to compare it to P5 and testing purposes
+
+// shut up message about parser creation
+@SuppressWarnings("deprecation")
+public class P4 {
     public static void main(String[] args)
 	throws IOException // may be thrown by the scanner
     {
-	// check for command-line arg
-	if (args.length != 3) {
-	    System.err.println("please supply name of file to be parsed " +
-			       "and name of file for unparsing");
+	// check for command-line args
+	if (args.length != 2) {
+	    System.err.println("please supply name of file to be parsed and name of file for decompiled version.");
 	    System.exit(-1);
 	}
 
@@ -44,17 +44,11 @@ public class P5 {
 	    System.err.println("File " + args[1] + " could not be opened.");
 	    System.exit(-1);
 	}
-	// added to generate spim code and still have decompiled code for debugging
-	PrintWriter spimFilWriter = null;
-	try {
-	    spimFilWriter = IO.openOutputFile(args[2]);
-	} catch (IOException ex) {
-	    System.err.println("File " + args[2] + " could not be opened.");
-	    System.exit(-1);
-	}
 
-	parser P = new parser(new Yylex(inFile));
 
+	parser P = new parser();
+	P.setScanner(new Yylex(inFile));
+	
 	Symbol root=null; // the parser will return a Symbol whose value
 	                  // field's type is the type associated with the
 	                  // root nonterminal (i.e., with the nonterminal
@@ -67,27 +61,19 @@ public class P5 {
 	    System.out.println(ex);
 	    System.exit(0);
 	}
-
-	// Run your typechecker in two passes here
-	// e.g. ((ProgramNode)root.value).processNames();
-
-
-	// Only continue  if there have been no errors so far
-	// if (!Errors.wereErrors()) {
-	//    ((ProgramNode)root.value).typeCheck();
-	//}
-
-	// Now call your code generator...
 	LinkedList<SymbolTable> symTabList = new LinkedList<SymbolTable>();
 
 	((ASTnode)root.value).nameAnalysis(symTabList, 0);
 	((ASTnode)root.value).decompile(outFile, 0);
-	((ProgramNode)root.value).typeCheck();
-	Codegen.p = spimFilWriter;
-	((ProgramNode)root.value).cgen();
-	spimFilWriter.close();
 	outFile.close();
-	
+	((ProgramNode)root.value).typeCheck();
+
 	return;
     }
+
+	private static void debug(LinkedList<SymbolTable> symTabList){
+		for(SymbolTable symTab : symTabList){
+			System.out.println(symTab.toString());
+		}
+	}
 }
